@@ -1,0 +1,41 @@
+{
+  "name": "calyptra",
+  "private": true,
+  "type": "module",
+  "description": "Private (zero-knowledge) two-party state channels on Monad",
+  "engines": { "node": ">=24" },
+  "workspaces": ["packages/*", "circuits", "apps/*", "e2e"],
+  "scripts": {
+    "setup": "node scripts/setup.ts",
+    "build:circuits": "npm run build -w @calyptra/circuits",
+    "build:contracts": "node scripts/build-contracts.ts",
+    "devnode": "node scripts/devnode.ts",
+    "deploy:devnode": "node scripts/deploy.ts",
+    "deploy:network": "node scripts/deploy-network.ts",
+    "deploy:live": "node scripts/deploy-live.ts",
+    "demo": "node scripts/demo.ts",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "node scripts/test-all.ts",
+    "test:unit": "vitest run --project framework --project desktop --project web",
+    "test:circuits": "vitest run --project circuits",
+    "test:contracts": "cd contracts && forge test",
+    "test:integration": "vitest run --project integration",
+    "test:ui": "playwright test -c e2e/playwright.config.ts",
+    "test:live": "playwright test -c e2e/live/playwright.config.ts",
+    "test:impact": "node scripts/test-impact.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.3",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0",
+    "solc": "^0.8.37",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "viem": "^2.57.2",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.147.0"
+  }
+}

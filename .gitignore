@@ -1,0 +1,52 @@
+# AI instruction documents kept local
+/brd.md
+/BRD recipes/
+/Sample-architecture-nodejs-backend.md
+/all-ref.md
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+AGENTS.md
+GEMINI.md
+.cursorrules
+.cursor/
+.windsurfrules
+.github/copilot-instructions.md
+
+# Design references and pitch material kept local
+/reference/
+/pitchdeck/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+contracts/out/
+contracts/cache/
+*.tsbuildinfo
+.vite/
+
+# Generated circuit/contract artifacts (recreated by `npm run setup`)
+circuits/build/
+contracts/src/generated/
+packages/framework/artifacts/
+apps/web/public/artifacts/
+
+# Local runtime data
+.devnode/
+.calyptra/
+.env
+.env.*
+!.env.example
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Misc
+*.log
+.DS_Store

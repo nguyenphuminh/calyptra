@@ -1,0 +1,14 @@
+{
+  "name": "@calyptra/circuits",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Circom circuits for the Calyptra pool and channels, with their Groth16 setup",
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": { "@calyptra/framework": "^0.1.0" },
+  "dependencies": { "circomlib": "^2.0.5", "snarkjs": "^0.7.6" }
+}

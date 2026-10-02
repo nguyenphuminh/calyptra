@@ -1,0 +1,38 @@
+{
+  "name": "@calyptra/framework",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The Calyptra channel node as a library: wallet core, pool, channels, disputes, P2P and relayer client",
+  "exports": {
+    ".": "./src/index.ts",
+    "./protocol": "./src/shared/protocol/index.ts",
+    "./libp2p-node": "./src/libp2p.node.ts",
+    "./libp2p-browser": "./src/libp2p.browser.ts"
+  },
+  "scripts": { "typecheck": "tsc --noEmit -p tsconfig.json", "test": "vitest run" },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^17.0.0",
+    "@chainsafe/libp2p-yamux": "^8.0.1",
+    "@libp2p/circuit-relay-v2": "^4.2.13",
+    "@libp2p/crypto": "^5.1.23",
+    "@libp2p/identify": "^4.1.14",
+    "@libp2p/interface": "^3.3.0",
+    "@libp2p/ping": "^3.1.13",
+    "@libp2p/tcp": "^11.0.28",
+    "@libp2p/utils": "^7.4.1",
+    "@libp2p/websockets": "^10.1.21",
+    "@multiformats/multiaddr": "^13.0.3",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "@scure/bip32": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "libp2p": "^3.3.11",
+    "poseidon-lite": "^0.3.0",
+    "snarkjs": "^0.7.6",
+    "viem": "^2.57.2",
+    "zod": "^4.6.5"
+  }
+}

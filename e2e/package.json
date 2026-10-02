@@ -1,0 +1,8 @@
+{
+  "name": "@calyptra/e2e",
+  "private": true,
+  "type": "module",
+  "description": "Integration tests on a local dev chain and UI tests of the wallet website",
+  "scripts": { "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "devDependencies": { "@playwright/test": "^1.63.0" }
+}
