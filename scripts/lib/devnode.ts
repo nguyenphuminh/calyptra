@@ -11,8 +11,10 @@ import { createPublicClient, createWalletClient, defineChain, http, type Hex } f
 import { privateKeyToAccount } from 'viem/accounts';
 
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-export const DEVNODE_DIR = `${REPO}/.devnode`;
-const PORT = 8545;
+/** `CALYPTRA_DEVNODE_PORT` runs a second, independent dev chain (its own data folder), e.g. for two test
+ *  tiers at once; the default chain is port 8545 in .devnode/. */
+const PORT = Number(process.env.CALYPTRA_DEVNODE_PORT ?? 8545);
+export const DEVNODE_DIR = PORT === 8545 ? `${REPO}/.devnode` : `${REPO}/.devnode-${PORT}`;
 export const DEVNODE_RPC = `http://127.0.0.1:${PORT}`;
 /** anvil's public, pre-funded account #0 (from its well-known test mnemonic). */
 export const DEV_PRIVATE_KEY: Hex = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';

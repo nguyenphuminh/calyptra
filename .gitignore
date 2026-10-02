@@ -36,6 +36,7 @@ apps/web/public/artifacts/
 
 # Local runtime data
 .devnode/
+.devnode-*/
 .calyptra/
 .env
 .env.*

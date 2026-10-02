@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   { ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', 'contracts/out/**', 'contracts/cache/**', 'contracts/lib/**',
-              '**/artifacts/**', '**/coverage/**', '**/playwright-report/**', '**/test-results/**', '.devnode/**',
+              '**/artifacts/**', '**/coverage/**', '**/playwright-report/**', '**/test-results/**', '.devnode/**', '.devnode-*/**',
               '.calyptra/**', 'reference/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
