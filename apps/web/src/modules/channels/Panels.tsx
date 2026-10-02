@@ -137,7 +137,7 @@ export function PendingConversation({ open, names }: { open: PendingOpen; names:
   const name = peerName(open.peerId, names);
   const asking = open.peerAmount > 0n;
   return (
-    <section className="conversation" aria-label="Channel" data-testid="pending-open">
+    <section className="conversation" aria-label="Tab" data-testid="pending-open">
       <header className="conversation-head">
         <a className="icon-button only-narrow" href="#/channels" aria-label="Back to tabs"><BackIcon /></a>
         <Avatar seed={open.peerId} size={40} />

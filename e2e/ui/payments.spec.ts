@@ -41,7 +41,7 @@ test('UI-C1: confirmed and cancelled payments, payments both ways, nicknames, th
 
   const bobTab = await openTab(bob);
   await expect(tabStatus(bobTab)).toHaveText('Live', { timeout: 120_000 });
-  await expect(bobTab.getByRole('heading', { level: 2 })).toHaveText(/Peer [A-Za-z0-9]{6}/);
+  await expect(bobTab.getByRole('heading', { level: 2 })).toHaveText(/Contact [A-Za-z0-9]{6}/);
 
   await payInTab(alice, aliceTab, '0.01', true);
   await expect(aliceTab.getByTestId('channel-mine')).toHaveText('0.0399 MON');
@@ -104,7 +104,7 @@ test('UI-C4: a dollar tab from a pasted code; a payment to a locked wallet waits
   await bob.getByRole('button', { name: 'Lock' }).click();
   await expect(bob.getByRole('heading', { name: 'Unlock your wallet' })).toBeVisible();
   await payInTab(alice, aliceTab, '0.5', true, 'stablecoin');
-  await expect(aliceTab.getByRole('alert')).toHaveText('The other party is not reachable right now');
+  await expect(aliceTab.getByRole('alert')).toHaveText('The other side is not reachable right now');
   await expect(aliceTab.getByTestId('channel-mine')).toHaveText('$3.99');
 
   await unlock(bob);

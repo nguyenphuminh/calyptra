@@ -110,7 +110,7 @@ export async function openTab(page: Page): Promise<Locator> {
 }
 
 /** The open conversation (a tab, a request or an outgoing request). */
-export const tabView = (page: Page): Locator => page.getByRole('region', { name: 'Channel', exact: true });
+export const tabView = (page: Page): Locator => page.getByRole('region', { name: 'Tab', exact: true });
 export const startDialog = (page: Page): Locator => popup(page, 'Start a tab');
 
 /** Switches the wallet to the dev network in Settings › Advanced. */

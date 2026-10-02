@@ -62,7 +62,7 @@ export function Conversation({ record, channels, names }: { record: ChannelRecor
   const payLabel = `Pay (${DISPLAY_SYMBOL[token]})`;
 
   return (
-    <section className="conversation" aria-label="Channel" data-testid={`channel-${id}`}>
+    <section className="conversation" aria-label="Tab" data-testid={`channel-${id}`}>
       <header className="conversation-head">
         <a className="icon-button only-narrow" href="#/channels" aria-label="Back to tabs"><BackIcon /></a>
         <Avatar seed={peer.peerId} size={40} />

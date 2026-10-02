@@ -1,8 +1,9 @@
+import type { Calyptra } from '@calyptra/framework';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { ChannelsPage, PendingOpens } from '../modules/channels/index.ts';
+import { ChannelsPage, nicknames, peerName, PendingOpens } from '../modules/channels/index.ts';
 import { MyWallet } from '../modules/home/index.ts';
 import { Onboarding, PhraseBanner, TAGLINE, Unlock } from '../modules/onboarding/index.ts';
-import { ServicesPage } from '../modules/services/index.ts';
+import { ServicesPage, subscriptionsOf } from '../modules/services/index.ts';
 import { Settings } from '../modules/settings/index.ts';
 import { AccountBar } from '../modules/wallet/index.ts';
 import { ChannelsIcon, Logo, ServicesIcon, SettingsIcon, WalletIcon } from '../shared/icons.tsx';
@@ -15,6 +16,17 @@ import { Prompts } from './prompts.ts';
 import { isChatOpen, routeOf, type Route } from './routes.ts';
 import { startNode } from './settings.ts';
 import { WorkerProver } from './worker-prover.ts';
+
+/** Which tab or subscription a background problem is about, by name rather than by id (§8.11 row 80). */
+function subjectOf(calyptra: Calyptra, channelId: string): string {
+  const subscription = subscriptionsOf(calyptra).find((s) => s.channelId === channelId);
+  if (subscription) return `Subscription to ${subscription.merchant}`;
+  try {
+    return `Tab with ${peerName(calyptra.channels.get(channelId).peer.peerId, nicknames(calyptra))}`;
+  } catch {
+    return 'A tab';
+  }
+}
 
 /** Interval of the background tick: pool sync, channel progress, dispute watching (default 10 s). */
 const TICK_MS = Number(import.meta.env.VITE_CALYPTRA_TICK_MS ?? 10_000);
@@ -95,7 +107,7 @@ export function App() {
       if (running) return;
       running = true;
       calyptra.tick().then(
-        (found) => setProblems(found.map((p) => `Tab ${p.channelId.slice(0, 8)}: ${errorText(p.error)}`)),
+        (found) => setProblems(found.map((p) => `${subjectOf(calyptra, p.channelId)}: ${errorText(p.error)}`)),
         (err: unknown) => setProblems([errorText(err)]),
       ).finally(() => {
         running = false;

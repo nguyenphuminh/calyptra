@@ -193,7 +193,7 @@ test('UI-W6: balances per account and network, a network without Calyptra, relay
 
   await useDevNetwork(page, 'dev-undeployed');
   await openWallet(page);
-  await expect(page.getByText('Calyptra is not available on Second dev chain yet.')).toBeVisible();
+  await expect(page.getByText('Calyptra is not available on this network yet.')).toBeVisible();
   await expect(page.getByTestId('shielded-native')).toHaveCount(0);
   await openTabs(page);
   await expect(page.getByText('Tabs need a message relay. Add one in Settings › Advanced for this network.')).toBeVisible();

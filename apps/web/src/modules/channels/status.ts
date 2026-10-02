@@ -17,5 +17,5 @@ export type PendingState = 'waiting' | 'declined' | 'failed';
 export const PENDING_TEXT: Record<PendingState, string> = { waiting: 'Pending', declined: 'Declined', failed: 'Not started' };
 export const PENDING_CLASS: Record<PendingState, string> = { waiting: 'status-pending', declined: 'status-declined', failed: 'status-failed' };
 
-/** The name shown for a peer: the user's nickname, else "Peer" and the end of its peer id. */
-export const peerName = (peerId: string, names: Record<string, string>): string => names[peerId] ?? `Peer ${peerId.slice(-6)}`;
+/** The name shown for a peer: the user's nickname, else "Contact" and the last 6 characters of its peer id. */
+export const peerName = (peerId: string, names: Record<string, string>): string => names[peerId] ?? `Contact ${peerId.slice(-6)}`;

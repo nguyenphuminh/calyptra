@@ -50,7 +50,7 @@ test('UI-C2: a funding that fails after acceptance is shown with its reason and 
   await expect(request).toBeHidden();
 
   const aliceTab = await openTab(alice);
-  await expect(aliceTab.getByRole('alert')).toContainText('Starting this tab failed: Not enough shielded funds', { timeout: 120_000 });
+  await expect(aliceTab.getByRole('alert')).toContainText('Starting this tab failed: Not enough in your private balance', { timeout: 120_000 });
   await expect(tabStatus(aliceTab)).toHaveText('Starting');
   const bobTab = await openTab(bob);
   await expect(tabStatus(bobTab)).toHaveText('Starting');

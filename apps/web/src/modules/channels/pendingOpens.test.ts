@@ -60,7 +60,7 @@ describe('PendingOpens', () => {
     c.accepted('channel-1');
     c.reject(new AppError(503, 'RELAYER_UNREACHABLE', 'The relayer is not reachable'));
     await settle();
-    expect(store.fundingError('channel-1')).toBe('The relayer is not reachable');
+    expect(store.fundingError('channel-1')).toBe('The privacy relay is not reachable right now. Try again in a moment.'); // in the website's words
     store.clear();
     expect(store.fundingError('channel-1')).toBeNull();
   });
@@ -75,7 +75,7 @@ describe('PendingOpens', () => {
     failed.reject(new AppError(503, 'PEER_UNREACHABLE', 'The other party is not reachable right now'));
     await settle();
     expect(store.get(a)).toMatchObject({ state: 'declined', error: null });
-    expect(store.get(b)).toMatchObject({ state: 'failed', error: 'The other party is not reachable right now' });
+    expect(store.get(b)).toMatchObject({ state: 'failed', error: 'The other side is not reachable right now' });
     store.dismiss(a);
     expect(store.get(a)).toBeUndefined();
   });

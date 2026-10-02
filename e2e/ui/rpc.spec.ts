@@ -93,8 +93,8 @@ test('UI-W9: own RPC endpoints are checked, tried first, and with the fallback o
     await expect(page.getByTestId('shielded-native')).toHaveText('0.1 MON');
     own.mode = 'down';
     await hero.getByRole('button', { name: 'Refresh' }).click();
-    await expect(hero.getByRole('alert')).toContainText(`No RPC endpoint of ${dev.name} is answering`);
-    await expect(card(page, 'Account balance').getByRole('alert')).toContainText(`No RPC endpoint of ${dev.name} is answering`);
+    await expect(hero.getByRole('alert')).toContainText('Calyptra cannot reach the network right now');
+    await expect(card(page, 'Account balance').getByRole('alert')).toContainText('Calyptra cannot reach the network right now');
     expect(toNetwork).toEqual([]);
 
     await openSettings(page, 'Advanced');

@@ -111,7 +111,7 @@ export function Onboarding({ calyptra, onReady }: { calyptra: Calyptra; onReady:
           </details>
           <details className="feature">
             <summary><span className="feature-icon"><KeyIcon /></span><strong>Your passkey is your key</strong></summary>
-            <p>Calyptra unlocks with Face ID, Touch ID or a security key. Your keys never leave this device, and nobody can move your money for you.</p>
+            <p>Calyptra unlocks with Face ID, Touch ID or a security key. Everything stays on this device, and nobody can move your money for you.</p>
           </details>
         </div>
         <div className="stack">

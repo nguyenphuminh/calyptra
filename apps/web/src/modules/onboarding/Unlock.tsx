@@ -72,7 +72,7 @@ export function ResetWallet({ calyptra, onReady }: { calyptra: Calyptra; onReady
   return (
     <Card title="Reset the wallet" className="auth-card">
       <Notice tone="warn">
-        Resetting restores the accounts of your recovery phrase and, by syncing, their balances. Imported private keys, tabs and
+        Resetting restores the accounts of your recovery phrase and their balances. Imported private keys, tabs and
         subscriptions are lost unless you also import an export file afterwards.
       </Notice>
       <label className="check">

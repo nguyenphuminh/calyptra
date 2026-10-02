@@ -222,7 +222,7 @@ test.describe.serial('money on testnet', () => {
     await expect(bobTab.getByTestId('channel-mine')).toHaveText('$0.03');
     await bob.getByRole('button', { name: 'Lock' }).click();
     await payInTab(alice, aliceTab, '0.01', true, 'stablecoin');
-    await expect(aliceTab.getByRole('alert')).toHaveText('The other party is not reachable right now');
+    await expect(aliceTab.getByRole('alert')).toHaveText('The other side is not reachable right now');
     await unlock(bob);
     await createInvite(bob);
     bobTab = await openTab(bob);

@@ -1,7 +1,8 @@
-import { decodeInvite, type MerchantMessage, type StopReason, type Subscription } from '@calyptra/framework';
+import { AppError, decodeInvite, type MerchantMessage, type StopReason, type Subscription } from '@calyptra/framework';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../../app/context.ts';
 import { formatDollars, tokenName } from '../../shared/amounts.ts';
+import { friendlyError } from '../../shared/errors.ts';
 import { BackIcon, PauseIcon, PlayIcon, SendIcon } from '../../shared/icons.tsx';
 import { Button, ErrorNote, Modal, Notice, RelayedSubmit, useAction } from '../../shared/ui.tsx';
 import { clockText, merchantsOf, paidSeconds } from './merchants.ts';
@@ -52,7 +53,7 @@ export function Session({ subscription }: { subscription: Subscription }) {
     } else if (message.type === 'insufficient') {
       setBanner("Payment didn't go through, the service paused");
     } else {
-      setBanner(message.message);
+      setBanner(friendlyError(new AppError(409, message.code, message.message)));
     }
   }, []);
   const onStop = useCallback((reason: StopReason) => {

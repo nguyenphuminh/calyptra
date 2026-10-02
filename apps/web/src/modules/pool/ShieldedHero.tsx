@@ -35,7 +35,7 @@ export function ShieldedHero() {
           <span className="medium"><span data-testid="shielded-native" title={formatAmount('native', native)}>{formatAmount('native', native)}</span></span>
         ) : null}
       </div>
-      {network.contracts ? null : <Notice tone="warn">Calyptra is not available on {network.name} yet.</Notice>}
+      {network.contracts ? null : <Notice tone="warn">Calyptra is not available on this network yet.</Notice>}
       <ErrorNote error={sync.error} />
       <nav className="actions three" aria-label="Private balance actions">
         <ActionLink href="#/deposit" icon={<DepositIcon />} label="Add money" />

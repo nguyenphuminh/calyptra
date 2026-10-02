@@ -118,7 +118,7 @@ test('UI-P2: dollars: add with approval, send, refuse more than the balance, cas
   await send.getByRole('button', { name: 'Send', exact: true }).click();
   const review = popup(alice, 'Confirm: Send');
   await review.getByRole('button', { name: 'Confirm' }).click();
-  await expect(review.getByRole('alert')).toHaveText('Not enough shielded funds in this token (including the relayer fee)');
+  await expect(review.getByRole('alert')).toHaveText('Not enough in your private balance for this amount plus the network fee');
   await review.getByRole('button', { name: 'Cancel' }).click();
   await expect(review).toBeHidden();
   await send.getByRole('button', { name: 'Close' }).click();

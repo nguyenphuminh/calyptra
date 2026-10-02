@@ -10,7 +10,7 @@ import {
  * Words main screens never show (§11.6 and the jargon column of §8.11). Left out on purpose, because §11
  * or the product owner's wording keeps them: recovery phrase, private key (import forms), network fee,
  * account address, MON (fees), MetaMask, Settled, message relay (the notice that points to Advanced),
- * the default "Peer XXXXXX" name, and the round-amount "trace" hint.
+ * and the round-amount "trace" hint. One error state is scanned too (an over-balance Send).
  */
 const BANNED: RegExp[] = [
   // never shown (§11.6)
@@ -140,6 +140,14 @@ test('no crypto jargon on the main screens', async ({ newUser }) => {
   await expect(popup(alice, 'Confirm: Send')).toContainText('Network fee: $0.01');
   await scan(alice, 'Confirm: Send');
   await popup(alice, 'Confirm: Send').getByRole('button', { name: 'Cancel' }).click();
+  // An error state: more than the private balance holds. The framework's message is shown in the website's words.
+  await send.getByLabel('Amount ($)').fill('1000');
+  await send.getByRole('button', { name: 'Send', exact: true }).click();
+  const review = popup(alice, 'Confirm: Send');
+  await review.getByRole('button', { name: 'Confirm' }).click();
+  await expect(review.getByRole('alert')).toHaveText('Not enough in your private balance for this amount plus the network fee', { timeout: 120_000 });
+  await scan(alice, 'Send (error: more than the private balance)');
+  await review.getByRole('button', { name: 'Cancel' }).click();
   await send.getByRole('button', { name: 'Close' }).click();
 
   // Settings pages other than Advanced; the menu's entry for Advanced describes Advanced, so it is left out.

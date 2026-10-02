@@ -83,7 +83,7 @@ export function RequestConversation({ asked, names }: { asked: ChannelRequest; n
   const name = peerName(request.peerId, names);
   const secondsLeft = useSecondsLeft(asked.deadline);
   return (
-    <section className="conversation" aria-label="Channel" data-testid="channel-request">
+    <section className="conversation" aria-label="Tab" data-testid="channel-request">
       <header className="conversation-head">
         <a className="icon-button only-narrow" href="#/channels" aria-label="Back to tabs"><BackIcon /></a>
         <Avatar seed={request.peerId} size={40} />

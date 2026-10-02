@@ -9,6 +9,7 @@ import { passkeyVaultKey } from '@calyptra/framework';
 import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { sha256, stringToBytes } from 'viem';
+import { friendlyError } from './errors.ts';
 
 /** Credential metadata (no key material) of this browser's passkey, so unlock asks for that passkey only. */
 const CREDENTIAL_KEY = 'calyptra.credential';
@@ -106,7 +107,7 @@ export function passkeyErrorText(err: unknown): string {
   if (isMeraError(err) && err.code === 'PASSKEY_OPERATION_FAILED') {
     return 'Passkeys are not available in this browser. Continue with a recovery phrase instead.';
   }
-  return err instanceof Error ? err.message : String(err);
+  return friendlyError(err);
 }
 
 /** Whether this browser can create passkeys at all (WebAuthn present). */

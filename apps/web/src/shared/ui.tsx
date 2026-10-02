@@ -1,5 +1,5 @@
 // Shared components and hooks, styled only by the global classes of styles.css.
-import { isAppError, isRoundAmount, quotedFee, type RelayerPort } from '@calyptra/framework';
+import { isRoundAmount, quotedFee, type RelayerPort } from '@calyptra/framework';
 import QRCode from 'qrcode';
 import {
   cloneElement, useCallback, useEffect, useId, useRef, useState,
@@ -7,14 +7,11 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { DISPLAY_SYMBOL, formatAmount, formatMoney, parseAmount, type TokenName } from './amounts.ts';
+import { friendlyError } from './errors.ts';
 import { BackIcon, CloseIcon, CopyIcon, Logo } from './icons.tsx';
 
-/** The message to show for anything thrown: an AppError's or Error's message, else the value as text. */
-export function errorText(err: unknown): string {
-  if (isAppError(err)) return err.message;
-  if (err instanceof Error) return err.message;
-  return String(err);
-}
+/** The message to show for anything thrown, in the website's own words (see errors.ts). */
+export const errorText = (err: unknown): string => friendlyError(err);
 
 /** Runs a user action: busy while it runs, its error kept for display, `null` returned on failure. */
 export function useAction<A extends unknown[], T>(run: (...args: A) => Promise<T>) {
