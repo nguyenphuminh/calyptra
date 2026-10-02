@@ -16,6 +16,7 @@ import { createPublicClient, createWalletClient, defineChain, formatEther, http,
 import type { Address, Hex } from 'viem';
 import { english, generateMnemonic, privateKeyToAccount } from 'viem/accounts';
 import { desktopRpc, freePort, runDesktop, startDesktop, stopDesktop } from './lib/desktop-process.ts';
+import { sendValueSpaced } from './lib/value-sends.ts';
 
 /** The product owner's domain (§13.2): deferred, ask before deploying. */
 const DOMAIN = '<DOMAIN>';
@@ -141,12 +142,7 @@ async function fundRelayer(wallet: RelayWallet): Promise<void> {
   const key = (await readFile(FUNDER_KEY_FILE, 'utf8')).trim();
   const funder = privateKeyToAccount((key.startsWith('0x') ? key : `0x${key}`) as Hex);
   const value = RELAYER_TARGET - balance;
-  const hash = await createWalletClient({ account: funder, chain, transport: http(n.rpcUrl) }).sendTransaction({
-    to: wallet.relayerAccount,
-    value,
-    gas: 21_000n, // Monad bills the declared limit: a plain transfer needs exactly 21000
-  });
-  await client.waitForTransactionReceipt({ hash });
+  const hash = await sendValueSpaced(createWalletClient({ account: funder, chain, transport: http(n.rpcUrl) }), client, wallet.relayerAccount, value);
   console.log(`topped up to ${formatEther(RELAYER_TARGET)} MON with ${formatEther(value)} MON from ${funder.address} (${hash})`);
 }
 
