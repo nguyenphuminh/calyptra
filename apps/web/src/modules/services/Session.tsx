@@ -162,7 +162,10 @@ export function Session({ subscription }: { subscription: Subscription }) {
       {disputing ? (
         <Modal title="Settle without the other side">
           <p>This settles the subscription with your latest balances, without the service. Use it only if it stopped answering.</p>
-          <p className="muted small">It starts a public dispute and settles only after the 7-day window. Your wallet must be opened during that time.</p>
+          <details className="notes">
+            <summary>Details</summary>
+            <p className="muted small">It starts a public dispute and settles only after the 7-day window. Your wallet must be opened during that time.</p>
+          </details>
           <ErrorNote error={dispute.error} />
           <div className="stack">
             <Button className="danger wide" busy={dispute.busy} onClick={() => void dispute.perform()}>Settle without them</Button>
