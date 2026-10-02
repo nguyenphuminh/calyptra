@@ -11,7 +11,7 @@ import {
 } from 'viem';
 import { AppError } from '../../shared/errors/AppError.ts';
 import { CIPHERTEXT_SIZE, decryptNote, noteCommitment } from '../../shared/protocol/index.ts';
-import { disputesAbi, poolAbi, tokenAddress, type ChainAdapter } from '../chain/index.ts';
+import { disputesAbi, poolAbi, reserveBalanceOf, tokenAddress, type ChainAdapter } from '../chain/index.ts';
 import { shieldedAddressOf, type PoolKeys } from '../keys/index.ts';
 import { RelayRequestSchema, type RelayKind, type RelayRequest, type RelayResult, type RelayerInfo } from './relayer.schema.ts';
 
@@ -32,10 +32,6 @@ export const DEFAULT_GAS_LIMITS: Readonly<Record<RelayKind, bigint>> = {
   submitState: 1_380_000n,
 };
 
-/** The native balance a Monad account must keep (reserve-balance rule): 10 MON. */
-export const MONAD_RESERVE = 10n ** 19n;
-/** Monad testnet and mainnet: the reserve applies there by default. */
-const MONAD_CHAIN_IDS: ReadonlySet<number> = new Set([10143, 143]);
 /** Monad produces a block about every 300 ms, so receipts are polled often. */
 const RECEIPT_POLLING_MS = 250;
 
@@ -74,7 +70,7 @@ export class RelayerService {
     this.chain = chain;
     this.options = options;
     this.gasLimits = { ...DEFAULT_GAS_LIMITS, ...options.gasLimits };
-    this.reserve = options.reserve ?? (MONAD_CHAIN_IDS.has(chain.network.chainId) ? MONAD_RESERVE : 0n);
+    this.reserve = options.reserve ?? reserveBalanceOf(chain.network.chainId);
   }
 
   info(): RelayerInfo {

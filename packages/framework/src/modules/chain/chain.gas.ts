@@ -11,3 +11,11 @@ export const APPROVE_GAS_LIMIT = 100_000n;
 /** `Pool.deposit` (native coin or stablecoin): one Poseidon commitment plus a depth-20 tree insert
  *  (Gas.t.sol DEPOSIT_GAS_LIMIT). */
 export const DEPOSIT_GAS_LIMIT = 1_300_000n;
+
+/** Monad's reserve-balance rule: an account keeps 10 MON for the fees of transactions in flight, or its
+ *  transactions can fail while still paying gas. Other chains (anvil) have no reserve. */
+export const MONAD_RESERVE_BALANCE = 10n ** 19n;
+const MONAD_CHAIN_IDS = new Set([10143, 143]);   // testnet, mainnet
+
+/** The native balance an account of this chain must keep untouched. */
+export const reserveBalanceOf = (chainId: number): bigint => (MONAD_CHAIN_IDS.has(chainId) ? MONAD_RESERVE_BALANCE : 0n);

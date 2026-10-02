@@ -4,11 +4,11 @@ import { bytesToHex, concatHex, defineChain, keccak256, parseTransaction, toHex,
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { encryptNote, noteCommitment, randomFieldElement, type NotePreimage } from '../../shared/protocol/index.ts';
-import type { ChainAdapter } from '../chain/index.ts';
+import { MONAD_RESERVE_BALANCE, type ChainAdapter } from '../chain/index.ts';
 import { derivePoolKeys, shieldedAddressOf, type PoolKeys } from '../keys/index.ts';
 import { DirectRelayer, quotedFee } from './relayer.client.ts';
 import type { RelayRequest } from './relayer.schema.ts';
-import { DEFAULT_GAS_LIMITS, MONAD_RESERVE, RelayerService } from './relayer.service.ts';
+import { DEFAULT_GAS_LIMITS, RelayerService } from './relayer.service.ts';
 
 const STABLECOIN = '0x00000000000000000000000000000000000000AA';
 const POOL = '0x1111111111111111111111111111111111111111';
@@ -141,7 +141,7 @@ describe('RelayerService', () => {
     const low = chainOf({ balance: 10n ** 18n + gasCost - 1n });
     const service = new RelayerService(low.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees, reserve: 10n ** 18n });
     await expect(service.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject({ code: 'RESERVE_TOO_LOW', statusCode: 503 });
-    const monad = chainOf({ chainId: 10143, balance: MONAD_RESERVE });
+    const monad = chainOf({ chainId: 10143, balance: MONAD_RESERVE_BALANCE });
     const onMonad = new RelayerService(monad.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees });
     await expect(onMonad.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject({ code: 'RESERVE_TOO_LOW' });
     const enough = chainOf({ balance: gasCost });

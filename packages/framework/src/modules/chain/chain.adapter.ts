@@ -1,12 +1,12 @@
 import {
   BaseError, ContractFunctionRevertedError, ExecutionRevertedError, HttpRequestError, RpcRequestError, TimeoutError,
-  createPublicClient, createWalletClient, defineChain, http, zeroAddress,
+  createPublicClient, createWalletClient, defineChain, formatEther, http, zeroAddress,
   type Address, type Chain, type Hex, type LocalAccount, type PublicClient,
 } from 'viem';
 import { AppError, isAppError } from '../../shared/errors/AppError.ts';
 import { disputesAbi, erc20Abi, poolAbi } from './chain.abi.ts';
 import type { NetworkConfig } from './chain.config.ts';
-import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT } from './chain.gas.ts';
+import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT, reserveBalanceOf } from './chain.gas.ts';
 
 export interface CommitmentEvent { commitment: bigint; leafIndex: number; ciphertext: Hex; blockNumber: bigint }
 export interface Dispute { pending: boolean; nonce: bigint; stateHash: bigint; deadline: bigint }
@@ -314,6 +314,18 @@ export class ChainAdapter {
         }));
       }
     }
+    // Monad's reserve: the native coin sent plus the fee budget must leave the reserve in the account
+    // (§5 porting notes). The fees checked are the fees sent.
+    const reserve = token === 0n ? reserveBalanceOf(this.network.chainId) : 0n;
+    let fees: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint } | undefined;
+    if (reserve > 0n) {
+      const { maxFeePerGas, maxPriorityFeePerGas } = await endpoint.client.estimateFeesPerGas();
+      fees = { maxFeePerGas, maxPriorityFeePerGas };
+      const balance = await endpoint.client.getBalance({ address: account.address });
+      if (balance - amount - DEPOSIT_GAS_LIMIT * maxFeePerGas < reserve) {
+        throw new AppError(409, 'RESERVE_TOO_LOW', `Keep at least ${formatEther(reserve)} MON in this account for network fees; add less, or top it up first`);
+      }
+    }
     const call = {
       account, address: pool, abi: poolAbi, functionName: 'deposit', args: [tokenAddress(token), amount, inner, ciphertext],
       value: token === 0n ? amount : 0n,
@@ -321,6 +333,6 @@ export class ChainAdapter {
     // With an explicit gas limit nothing is estimated, and Monad charges the whole limit of a reverted
     // transaction: simulate first, so a deposit that would revert fails here (viem error) and costs nothing.
     await endpoint.client.simulateContract(call);
-    return this.confirm(endpoint, await wallet.writeContract({ ...call, chain: this.chain, gas: DEPOSIT_GAS_LIMIT }));
+    return this.confirm(endpoint, await wallet.writeContract({ ...call, chain: this.chain, gas: DEPOSIT_GAS_LIMIT, ...fees }));
   }
 }
