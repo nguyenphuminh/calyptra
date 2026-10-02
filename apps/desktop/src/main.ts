@@ -16,7 +16,7 @@ import {
   RelayerService,
   fileArtifacts,
 } from '@calyptra/framework';
-import type { NetworkConfig } from '@calyptra/framework';
+import type { NetworkConfig, Offer } from '@calyptra/framework';
 import { createPeerNode, createRelayNode } from '@calyptra/framework/libp2p-node';
 import type { Libp2p } from '@libp2p/interface';
 import type { Express } from 'express';
@@ -27,7 +27,7 @@ import { USAGE, loadConfig } from './config/index.ts';
 import type { Config } from './config/index.ts';
 import { createHyperRpcService, envioHyperRpcUrl } from './modules/hyperrpc/index.ts';
 import type { HyperRpcService } from './modules/hyperrpc/index.ts';
-import { createQwenMerchant } from './modules/merchant/index.ts';
+import { createMerchantCardService, createQwenService } from './modules/merchant/index.ts';
 import { NodeService } from './modules/node/index.ts';
 import { ShellService, formatError } from './modules/shell/index.ts';
 import { FileStore } from './shared/integrations/file.store.ts';
@@ -48,6 +48,8 @@ async function main(argv: readonly string[]): Promise<void> {
   const logger = createLogger(config.logLevel);
   const networks: NetworkConfig[] = [...BUILT_IN_NETWORKS];
   if (config.networkFile) networks.push(NetworkConfigSchema.parse(JSON.parse(await readFile(config.networkFile, 'utf8'))));
+  // Merchant mode (§11.5): the offer is checked before anything starts; the facade sells it on every session.
+  const offer = config.command === 'start' && config.merchant.enabled ? OfferSchema.parse(JSON.parse(await readFile(config.merchant.offerFile ?? '', 'utf8'))) : undefined;
   const calyptra = new Calyptra({
     store: new FileStore(config.dataDir),
     artifacts: fileArtifacts(ARTIFACTS),
@@ -58,9 +60,10 @@ async function main(argv: readonly string[]): Promise<void> {
     rpcUrls: config.chainRpcs,
     rpcFallback: config.chainRpcFallback,
     maxFee: maxFeesOf(config, networks),
+    merchant: offer && { offer, service: createQwenService(config.merchant.apiKey ?? '') },
   });
   if (config.command === 'init') return init(config, calyptra);
-  return start(config, calyptra, logger);
+  return start(config, calyptra, logger, offer);
 }
 
 /** The highest relayer fee accepted per token id (0 = native coin, else the stablecoin of each network). */
@@ -104,10 +107,8 @@ function listen(app: Express, port: number, host: string): Promise<Server> {
 }
 
 /** Runs the node until SIGINT/SIGTERM (or the shell's `exit`). */
-async function start(config: Config, calyptra: Calyptra, logger: Logger): Promise<void> {
+async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: Offer | undefined): Promise<void> {
   const { wallet, keys } = calyptra;
-  // Merchant mode (§11.5): the offer is checked before anything starts.
-  const offer = config.merchant.enabled ? OfferSchema.parse(JSON.parse(await readFile(config.merchant.offerFile ?? '', 'utf8'))) : null;
   await wallet.unlock(await readSecret('CALYPTRA_PASSWORD', 'Data password: '));
   if (config.network) await wallet.setNetwork(config.network);
   const network = calyptra.network();
@@ -165,8 +166,8 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger): Promis
     }
 
     await calyptra.start();
-    // Sells the offer as an AI chat on Qwen over the service protocol; subscribers open its card.
-    const merchant = offer ? await createQwenMerchant(calyptra, offer, config.merchant.apiKey ?? '').start() : null;
+    // The session sells the offer on the service protocol; subscribers open the merchant's card.
+    const merchant = offer ? await createMerchantCardService(calyptra, offer).getCard() : null;
     const relayerUrl = relayer ? `http://${config.relayer.host}:${config.relayer.port}` : null; // the listen URL, not a public one
     const libp2pRelay = (): string[] | null => relayNode?.getMultiaddrs().map(String) ?? null;
     const node = new NodeService(calyptra, {

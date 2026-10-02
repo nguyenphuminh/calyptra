@@ -1,11 +1,15 @@
-import type { Calyptra, Offer } from '@calyptra/framework';
+import type { Calyptra, Offer, ServicePort } from '@calyptra/framework';
 import { QwenAdapter } from './adapters/qwen.adapter.ts';
-import { MerchantHost } from './merchant.service.ts';
+import { MerchantCardService } from './merchant.service.ts';
 import { QwenChatService } from './qwen-chat.service.ts';
 
-export type { MerchantHost } from './merchant.service.ts';
+export type { MerchantCardService } from './merchant.service.ts';
 
-/** The merchant of this node: the offer, sold as an AI chat on Qwen (key from DASHSCOPE_API_KEY). */
-export function createQwenMerchant(calyptra: Calyptra, offer: Offer, apiKey: string): MerchantHost {
-  return new MerchantHost(calyptra, offer, new QwenChatService(new QwenAdapter({ apiKey })));
+/** The service this merchant sells: an AI chat on Qwen (key from DASHSCOPE_API_KEY). */
+export function createQwenService(apiKey: string): ServicePort {
+  return new QwenChatService(new QwenAdapter({ apiKey }));
+}
+
+export function createMerchantCardService(calyptra: Calyptra, offer: Offer): MerchantCardService {
+  return new MerchantCardService(calyptra, offer);
 }
