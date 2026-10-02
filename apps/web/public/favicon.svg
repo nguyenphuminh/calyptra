@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .disc { fill: #0b0b0d; }
+    @media (prefers-color-scheme: dark) { .disc { fill: #f5f5f7; } }
+  </style>
+  <defs>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a5b4fc" />
+      <stop offset="1" stop-color="#c4b5fd" />
+    </linearGradient>
+    <clipPath id="hem">
+      <path d="M0 67V43c9-6 20-8.5 32-8.5S55 37 64 43v24z" />
+    </clipPath>
+  </defs>
+  <circle cx="32" cy="38" r="20" class="disc" clip-path="url(#hem)" />
+  <path d="M8 40C8 22 18 9 32 3c14 6 24 19 24 37-8-5.5-15.5-8-24-8.5S16 34.5 8 40z" fill="url(#glow)" />
+</svg>
