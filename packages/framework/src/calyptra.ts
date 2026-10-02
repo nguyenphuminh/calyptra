@@ -224,6 +224,8 @@ export class Calyptra {
    *  Per-channel failures are returned instead of thrown. */
   async tick(): Promise<TickProblem[]> {
     const session = this.current();
+    // A libp2p relay that was unreachable (at start or since) gets its reservation back; never throws.
+    await session.p2p?.restoreRelays();
     await session.pool.sync(session.accountId);
     if (!session.channels || !session.disputes) return [];
     const relayer = this.relayer();

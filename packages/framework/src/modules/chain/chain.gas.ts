@@ -10,7 +10,7 @@
 export const APPROVE_GAS_LIMIT = 100_000n;
 /** `Pool.deposit` (native coin or stablecoin): one Poseidon commitment plus a depth-20 tree insert
  *  (Gas.t.sol DEPOSIT_GAS_LIMIT). */
-export const DEPOSIT_GAS_LIMIT = 1_300_000n;
+export const DEPOSIT_GAS_LIMIT = 1_350_000n;
 
 /** Monad's reserve-balance rule: an account keeps 10 MON for the fees of transactions in flight, or its
  *  transactions can fail while still paying gas. Other chains (anvil) have no reserve. */

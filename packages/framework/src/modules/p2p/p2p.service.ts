@@ -8,6 +8,7 @@ import type { Invite } from './invite.ts';
 export const CHANNEL_PROTOCOL = '/calyptra/channel/1.0.0';
 const TIMEOUT_MS = 60_000;
 const RELAY_POLL_MS = 200;
+const noRelay = (): AppError => new AppError(503, 'NO_RELAY', 'No libp2p relay is reachable; add one in the network settings');
 
 /** Handles one request from a peer; throw an AppError to refuse. */
 export type RequestHandler = (fromPeerId: string, message: unknown) => Promise<unknown>;
@@ -76,6 +77,8 @@ export class P2PService {
   readonly node: Libp2p;
   private readonly timeoutMs: number;
   private handler: RequestHandler | null = null;
+  private stopped = false;
+  private restoring: Promise<boolean> | null = null;
 
   constructor(node: Libp2p, options: { timeoutMs?: number } = {}) {
     this.node = node;
@@ -104,13 +107,43 @@ export class P2PService {
     for (;;) {
       const addrs = this.relayAddresses();
       if (addrs.length > 0) return addrs;
-      if (Date.now() >= deadline) throw new AppError(503, 'NO_RELAY', 'No libp2p relay is reachable; add one in the network settings');
+      if (Date.now() >= deadline) throw noRelay();
       await new Promise((resolve) => setTimeout(resolve, RELAY_POLL_MS));
     }
   }
 
+  /** An invite needs a relay address to be reached at: NO_RELAY while no relay is reachable. */
   invite(shieldedAddress: string): Invite {
-    return { v: 1, peerId: this.peerId, addrs: this.relayAddresses(), shieldedAddress };
+    const addrs = this.relayAddresses();
+    if (addrs.length === 0) throw noRelay();
+    return { v: 1, peerId: this.peerId, addrs, shieldedAddress };
+  }
+
+  /**
+   * Makes the relay reservations again when this node has none (a relay that was down when the node
+   * started, or a reservation lost since; libp2p does not retry either). It restarts the libp2p node,
+   * which keeps its identity and registered handlers; while any relay circuit address exists it does
+   * nothing, so working relayed connections are never dropped. Never throws; returns whether the node
+   * is reachable through a relay afterwards. Called on every background tick.
+   */
+  restoreRelays(): Promise<boolean> {
+    this.restoring ??= this.restartWithoutRelay().finally(() => {
+      this.restoring = null;
+    });
+    return this.restoring;
+  }
+
+  private async restartWithoutRelay(): Promise<boolean> {
+    if (this.stopped) return false;
+    if (this.relayAddresses().length > 0) return true;
+    try {
+      await this.node.stop();
+      if (this.stopped) return false; // stopped meanwhile: the identity may already belong to a new node
+      await this.node.start();
+    } catch {
+      // the next tick tries again
+    }
+    return this.relayAddresses().length > 0;
   }
 
   /** Sends one request and returns the peer's answer; one stream per request, one budget for dial, write and read. */
@@ -176,6 +209,8 @@ export class P2PService {
   }
 
   async stop(): Promise<void> {
+    this.stopped = true;
+    await this.restoring;
     await this.node.stop();
   }
 

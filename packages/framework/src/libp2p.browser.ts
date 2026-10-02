@@ -3,7 +3,7 @@ import { yamux } from '@chainsafe/libp2p-yamux';
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
 import { generateKeyPairFromSeed } from '@libp2p/crypto/keys';
 import { identify } from '@libp2p/identify';
-import type { Libp2p } from '@libp2p/interface';
+import { FaultTolerance, type Libp2p } from '@libp2p/interface';
 import { ping } from '@libp2p/ping';
 import { webSockets } from '@libp2p/websockets';
 import { createLibp2p } from 'libp2p';
@@ -14,6 +14,9 @@ export async function createBrowserNode(options: { relays: string[]; seed?: Uint
   return createLibp2p({
     ...(options.seed ? { privateKey: await generateKeyPairFromSeed('Ed25519', options.seed) } : {}),
     addresses: { listen: options.relays.map((r) => `${r}/p2p-circuit`) },
+    // An unreachable relay must not stop the node from starting (the wallet would not unlock):
+    // P2PService.restoreRelays() makes the reservation once the relay answers again.
+    transportManager: { faultTolerance: FaultTolerance.NO_FATAL },
     transports: [webSockets(), circuitRelayTransport()],
     connectionEncrypters: [noise()],
     streamMuxers: [yamux()],

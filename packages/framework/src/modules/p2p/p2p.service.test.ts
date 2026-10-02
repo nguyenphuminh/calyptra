@@ -1,6 +1,6 @@
 import { createServer } from 'node:net';
 import type { Libp2p } from '@libp2p/interface';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createPeerNode, createRelayNode } from '../../libp2p.node.ts';
 import { AppError } from '../../shared/errors/AppError.ts';
 import { decodeInvite, encodeInvite, inviteLink, type Invite } from './invite.ts';
@@ -17,9 +17,9 @@ const freePort = (): Promise<number> =>
   });
 
 const nodes: Libp2p[] = [];
-async function relay(announce?: string[]): Promise<{ node: Libp2p; addr: string }> {
-  const port = await freePort();
-  const node = await createRelayNode({ listen: [`/ip4/127.0.0.1/tcp/${port}/ws`], announce });
+async function relay(announce?: string[], at?: { port: number; seed: Uint8Array }): Promise<{ node: Libp2p; addr: string }> {
+  const port = at?.port ?? (await freePort());
+  const node = await createRelayNode({ listen: [`/ip4/127.0.0.1/tcp/${port}/ws`], announce, ...(at ? { seed: at.seed } : {}) });
   nodes.push(node);
   return { node, addr: `/ip4/127.0.0.1/tcp/${port}/ws/p2p/${node.peerId.toString()}` };
 }
@@ -141,4 +141,49 @@ describe('P2PService failures', () => {
     const invite = p.invite('cal00');
     expect(invite.addrs.some((a) => a.startsWith(`/dns4/relay.example/tcp/443/wss/p2p/${node.peerId.toString()}/p2p-circuit/p2p/`))).toBe(true);
   }, 30_000);
+});
+
+describe('an unreachable relay', () => {
+  it('does not stop a peer from starting, and its reservation is restored once the relay answers', async () => {
+    const at = { port: await freePort(), seed: crypto.getRandomValues(new Uint8Array(32)) };
+    const first = await relay(undefined, at);
+    await first.node.stop(); // the relay is down from here on
+    const node = await createPeerNode({ relays: [first.addr] }); // starts anyway
+    nodes.push(node);
+    const bob = new P2PService(node);
+    await bob.listen(async (from, message) => ({ from, message }));
+    expect(bob.relayAddresses()).toEqual([]);
+    expect(() => bob.invite('cal00')).toThrow(expect.objectContaining({ code: 'NO_RELAY' }));
+    await expect(bob.waitForRelay(500)).rejects.toMatchObject({ code: 'NO_RELAY' });
+    await expect(bob.restoreRelays()).resolves.toBe(false);
+
+    await relay(undefined, at); // the relay is back, same address and identity
+    const peerId = bob.peerId;
+    await expect(bob.restoreRelays()).resolves.toBe(true);
+    expect(bob.peerId).toBe(peerId);
+    const invite = bob.invite('cal00');
+    expect(invite.addrs[0]).toContain(`${first.addr}/p2p-circuit/p2p/${peerId}`);
+    const alice = await peer(first.addr);
+    await expect(alice.request(invite, { hello: 1n })).resolves.toEqual({ from: alice.peerId, message: { hello: '1' } });
+
+    // With a relay address in place nothing is restarted, so working connections stay.
+    const stop = vi.spyOn(node, 'stop');
+    await expect(bob.restoreRelays()).resolves.toBe(true);
+    expect(stop).not.toHaveBeenCalled();
+    stop.mockRestore();
+  }, 60_000);
+
+  it('restores a reservation lost when the relay restarted', async () => {
+    const at = { port: await freePort(), seed: crypto.getRandomValues(new Uint8Array(32)) };
+    const first = await relay(undefined, at);
+    const bob = await peer(first.addr);
+    await bob.listen(async () => 'pong');
+    await first.node.stop();
+    for (let i = 0; i < 50 && bob.relayAddresses().length > 0; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(bob.relayAddresses()).toEqual([]);
+    await relay(undefined, at);
+    await expect(bob.restoreRelays()).resolves.toBe(true);
+    const alice = await peer(first.addr);
+    await expect(alice.request(bob.invite('cal00'), {})).resolves.toBe('pong');
+  }, 60_000);
 });
