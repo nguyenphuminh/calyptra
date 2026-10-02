@@ -48,10 +48,9 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
   UNKNOWN_NETWORK: 'This network is not available in Calyptra.',
   TRANSACTION_FAILED: `The network refused this. ${TRY_AGAIN}`,
   WOULD_REVERT: 'The network would refuse this, so nothing was sent. Refresh and try again.',
-  RESERVE_TOO_LOW: {
-    'The relayer’s balance is below its reserve; try again later': 'The privacy relay cannot pay network fees right now. Try again later.',
-    '*': '', // the chain's own reserve message is already plain
-  },
+  RESERVE_TOO_LOW: 'The privacy relay cannot pay network fees right now. Try again later.',
+  INSUFFICIENT_PUBLIC_FUNDS: PASS,
+  CHAIN_STALLED: `The network is slow right now. ${TRY_AGAIN}`,
   AMOUNT_TOO_LARGE: 'The most you can add at once is 18.44 MON',
   SESSION_STOPPED: 'You switched account or network before this finished, so it was not saved.',
   NOT_STARTED: {

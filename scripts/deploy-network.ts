@@ -1,7 +1,8 @@
 // Deploys the production build (3-7 day dispute window) to a public network, with that chain's real stablecoin:
 //   npm run deploy:network -- --network <built-in id>      (e.g. monad-testnet)
 //   npm run deploy:network -- --network-file <json>         (a custom chain configuration)
-// The deployer key comes from CALYPTRA_DEPLOYER_KEY and must hold the ~10 MON Monad reserve plus gas.
+// The deployer key comes from CALYPTRA_DEPLOYER_KEY and must hold MON for the gas, billed on the declared
+// limits (deployments send no MON, so Monad's 10 MON reserve does not apply).
 // Paste the printed `contracts` block into the network's entry in
 // packages/framework/src/modules/chain/chain.config.ts.
 import { readFileSync } from 'node:fs';

@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { encodeAbiParameters, encodeEventTopics, numberToHex, toHex, zeroAddress, type Hex } from 'viem';
-import { afterEach, describe, expect, it } from 'vitest';
+import { encodeAbiParameters, encodeEventTopics, keccak256, numberToHex, toHex, zeroAddress, type Hex } from 'viem';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { privateKeyToAccount } from 'viem/accounts';
 import { poolAbi } from './chain.abi.ts';
 import {
@@ -18,6 +18,8 @@ interface Rpc {
   /** Every request, and the [from, to] range of every eth_getLogs. */
   methods: string[];
   ranges: [number, number][];
+  /** With `send`: the head block when each raw transaction arrived (the mock includes it in that block). */
+  sentAt: number[];
 }
 
 const servers: Server[] = [];
@@ -25,10 +27,16 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((s) => new Promise((resolve) => s.close(resolve))));
 });
 
-/** A JSON-RPC endpoint at block `head` that refuses log ranges over `maxRange` blocks and answers one commitment at block 5. */
-async function rpc(options: { head: number; maxRange?: number; chainId?: number; down?: boolean; balance?: bigint }): Promise<Rpc> {
+/**
+ * A JSON-RPC endpoint at block `head` (read on every request, so a test can move it on) that refuses log
+ * ranges over `maxRange` blocks and answers one commitment at block 5. With `send` it also takes
+ * transactions: calls succeed, allowances are 0, and each transaction is included at once in the head block.
+ */
+async function rpc(options: { head: number; maxRange?: number; chainId?: number; down?: boolean; balance?: bigint; send?: boolean }): Promise<Rpc> {
   const methods: string[] = [];
   const ranges: [number, number][] = [];
+  const sentAt: number[] = [];
+  const included = new Map<string, number>();
   const commitmentLog = (leafIndex: bigint, blockNumber: number): Record<string, unknown> => ({
     address: POOL,
     topics: encodeEventTopics({ abi: poolAbi, eventName: 'NewCommitment', args: { commitment: 1000n + leafIndex } }),
@@ -48,6 +56,24 @@ async function rpc(options: { head: number; maxRange?: number; chainId?: number;
       if (request.method === 'eth_blockNumber') return reply(numberToHex(options.head));
       if (request.method === 'eth_getBalance') return reply(numberToHex(options.balance ?? 0n));
       if (request.method === 'eth_maxPriorityFeePerGas') return reply(numberToHex(GWEI * 2n));
+      if (options.send) {
+        const param = (): Hex => (request.params as unknown as [Hex])[0];
+        if (request.method === 'eth_call') return reply(body.includes('dd62ed3e') ? numberToHex(0n, { size: 32 }) : '0x'); // allowance(): 0
+        if (request.method === 'eth_getTransactionCount') return reply(numberToHex(sentAt.length));
+        if (request.method === 'eth_sendRawTransaction') {
+          const hash = keccak256(param());
+          sentAt.push(options.head);
+          included.set(hash, options.head);
+          return reply(hash);
+        }
+        if (request.method === 'eth_getTransactionReceipt') {
+          return reply({
+            transactionHash: param(), transactionIndex: '0x0', blockHash: toHex(5n, { size: 32 }), blockNumber: numberToHex(included.get(param()) ?? 0),
+            from: zeroAddress, to: POOL, cumulativeGasUsed: '0x0', gasUsed: '0x0', effectiveGasPrice: '0x0', contractAddress: null,
+            logs: [], logsBloom: `0x${'00'.repeat(256)}`, status: '0x1', type: '0x2',
+          });
+        }
+      }
       if (request.method === 'eth_getBlockByNumber') {
         return reply({
           number: numberToHex(options.head), hash: toHex(3n, { size: 32 }), parentHash: toHex(4n, { size: 32 }), timestamp: '0x1',
@@ -77,7 +103,7 @@ async function rpc(options: { head: number; maxRange?: number; chainId?: number;
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address() as AddressInfo;
-  return { url: `http://127.0.0.1:${port}`, methods, ranges };
+  return { url: `http://127.0.0.1:${port}`, methods, ranges, sentAt };
 }
 
 function network(rpcUrl: string, extra: Partial<NetworkConfig> = {}): NetworkConfig {
@@ -184,33 +210,82 @@ describe('ChainAdapter.deposit and the Monad reserve', () => {
   // Fees of the mock: base fee 100 gwei (x 1.2 headroom) + 2 gwei tip = 122 gwei; x 1.3M gas = 0.1586 MON.
   const budget = DEPOSIT_GAS_LIMIT * 122n * GWEI;
   const amount = 10n ** 16n;   // 0.01 MON
+  const polls = (node: Rpc): number => node.methods.filter((m) => m === 'eth_blockNumber').length;
 
-  it('refuses a native deposit that would leave less than 10 MON on Monad, before sending anything', async () => {
-    const node = await rpc({ head: 10, balance: MONAD_RESERVE_BALANCE + amount + budget - 1n });
-    await expect(new ChainAdapter(network(node.url)).deposit(account, 0n, amount, 1n, ciphertext)).rejects.toMatchObject({
-      code: 'RESERVE_TOO_LOW', message: 'Keep at least 10 MON in this account for network fees; add less, or top it up first',
-    });
-    expect(node.methods).not.toContain('eth_call');
-    expect(node.methods).not.toContain('eth_sendRawTransaction');
+  it('refuses a native deposit the balance cannot cover with its network fee, on every chain, before sending anything', async () => {
+    for (const chainId of [CHAIN_ID, 31337]) {
+      const node = await rpc({ head: 10, chainId, balance: amount + budget - 1n, send: true });
+      await expect(new ChainAdapter(network(node.url, { chainId })).deposit(account, 0n, amount, 1n, ciphertext)).rejects.toMatchObject({
+        statusCode: 409, code: 'INSUFFICIENT_PUBLIC_FUNDS', message: 'This account does not have enough MON for this amount plus the network fee',
+      });
+      expect(node.methods).not.toContain('eth_call');
+      expect(node.methods).not.toContain('eth_sendRawTransaction');
+    }
   });
 
-  it('lets a native deposit through when the reserve stays', async () => {
-    const node = await rpc({ head: 10, balance: MONAD_RESERVE_BALANCE + amount + budget });
-    const err = await new ChainAdapter(network(node.url)).deposit(account, 0n, amount, 1n, ciphertext).catch((e: unknown) => e);
-    expect(err).not.toMatchObject({ code: 'RESERVE_TOO_LOW' });
-    expect(node.methods).toContain('eth_call');            // went on to the simulation (which this mock does not answer)
+  it('lets a native deposit go below the 10 MON reserve on Monad when the balance covers it and its network fee', async () => {
+    const node = await rpc({ head: 10, balance: amount + budget, send: true });
+    await new ChainAdapter(network(node.url)).deposit(account, 0n, amount, 1n, ciphertext);
+    expect(node.sentAt).toEqual([10]);   // the account sent nothing before: no wait
   });
 
-  it('has no reserve outside Monad, and none for stablecoin deposits', async () => {
+  it('waits until 3 blocks after the account’s last approve or deposit before going below the reserve', async () => {
+    for (const first of [0n, 1n]) {     // after a native deposit; after a stablecoin approve and deposit
+      const chain = { head: 10, balance: amount + budget, send: true };
+      const node = await rpc(chain);
+      const adapter = new ChainAdapter(network(node.url));
+      await adapter.deposit(account, first, amount, 1n, ciphertext);
+      const earlier = [...node.sentAt];
+      expect(earlier).toEqual(first === 0n ? [10] : [10, 10]);
+      const before = polls(node);
+      const next = adapter.deposit(account, 0n, amount, 1n, ciphertext);
+      await vi.waitFor(() => expect(polls(node)).toBeGreaterThan(before), { timeout: 5_000 });
+      chain.head = 12;
+      const seen = polls(node);
+      await vi.waitFor(() => expect(polls(node)).toBeGreaterThan(seen + 1), { timeout: 5_000 });
+      expect(node.sentAt).toEqual(earlier);   // block 12 is still within 3 blocks of block 10
+      chain.head = 13;
+      await next;
+      expect(node.sentAt).toEqual([...earlier, 13]);
+    }
+  }, 20_000);
+
+  it('does not wait when the reserve stays, nor outside Monad', async () => {
+    for (const [chainId, balance] of [[CHAIN_ID, MONAD_RESERVE_BALANCE + amount + budget], [31337, amount + budget]] as const) {
+      const node = await rpc({ head: 10, chainId, balance, send: true });
+      const adapter = new ChainAdapter(network(node.url, { chainId }));
+      await adapter.deposit(account, 0n, amount, 1n, ciphertext);
+      await adapter.deposit(account, 0n, amount, 1n, ciphertext);
+      expect(node.sentAt).toEqual([10, 10]);
+    }
+  });
+
+  it('gives up after about 10 s when the network does not move on', async () => {
+    const node = await rpc({ head: 10, balance: amount + budget, send: true });
+    const adapter = new ChainAdapter(network(node.url));
+    await adapter.deposit(account, 0n, amount, 1n, ciphertext);
+    vi.useFakeTimers({ toFake: ['Date'] });   // only the clock: requests and polling stay real
+    try {
+      const next = adapter.deposit(account, 0n, amount, 1n, ciphertext).catch((e: unknown) => e);
+      await vi.waitFor(() => expect(polls(node)).toBeGreaterThan(0), { timeout: 5_000 });
+      vi.setSystemTime(Date.now() + 10_000);
+      expect(await next).toMatchObject({
+        statusCode: 503, code: 'CHAIN_STALLED', message: 'The network has not moved on since this account’s last transaction; try again in a moment',
+      });
+      expect(node.sentAt).toEqual([10]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('has a reserve only on Monad, and checks no balance for stablecoin deposits', async () => {
     expect(reserveBalanceOf(10143)).toBe(MONAD_RESERVE_BALANCE);
     expect(reserveBalanceOf(143)).toBe(MONAD_RESERVE_BALANCE);
     expect(reserveBalanceOf(31337)).toBe(0n);
-    const anvil = await rpc({ head: 10, chainId: 31337, balance: 0n });
-    await new ChainAdapter(network(anvil.url, { chainId: 31337 })).deposit(account, 0n, amount, 1n, ciphertext).catch(() => undefined);
-    expect(anvil.methods).not.toContain('eth_getBalance');
-    const stable = await rpc({ head: 10, balance: 0n });
-    await new ChainAdapter(network(stable.url)).deposit(account, 1n, amount, 1n, ciphertext).catch(() => undefined);
+    const stable = await rpc({ head: 10, balance: 0n, send: true });
+    await new ChainAdapter(network(stable.url)).deposit(account, 1n, amount, 1n, ciphertext);
     expect(stable.methods).not.toContain('eth_getBalance');
+    expect(stable.sentAt).toEqual([10, 10]);   // approve, deposit
   });
 });
 

@@ -4,7 +4,7 @@ import { bytesToHex, concatHex, defineChain, keccak256, parseTransaction, toHex,
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { encryptNote, noteCommitment, randomFieldElement, type NotePreimage } from '../../shared/protocol/index.ts';
-import { MONAD_RESERVE_BALANCE, type ChainAdapter } from '../chain/index.ts';
+import type { ChainAdapter } from '../chain/index.ts';
 import { derivePoolKeys, shieldedAddressOf, type PoolKeys } from '../keys/index.ts';
 import { DirectRelayer, quotedFee } from './relayer.client.ts';
 import type { RelayRequest } from './relayer.schema.ts';
@@ -136,17 +136,20 @@ describe('RelayerService', () => {
     expect(calls.nonceReads).toBe(1);
   });
 
-  it('refuses to submit when the account would fall below its reserve', async () => {
+  it('refuses to submit when the balance cannot pay the gas plus the operator’s reserve; no reserve by default, on Monad too', async () => {
     const gasCost = DEFAULT_GAS_LIMITS.transact * MAX_FEE_PER_GAS;
+    const refused = { code: 'RESERVE_TOO_LOW', statusCode: 503, message: 'The relayer’s balance cannot pay for gas right now; try again later' };
     const low = chainOf({ balance: 10n ** 18n + gasCost - 1n });
     const service = new RelayerService(low.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees, reserve: 10n ** 18n });
-    await expect(service.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject({ code: 'RESERVE_TOO_LOW', statusCode: 503 });
-    const monad = chainOf({ chainId: 10143, balance: MONAD_RESERVE_BALANCE });
-    const onMonad = new RelayerService(monad.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees });
-    await expect(onMonad.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject({ code: 'RESERVE_TOO_LOW' });
-    const enough = chainOf({ balance: gasCost });
+    await expect(service.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject(refused);
+    const short = chainOf({ chainId: 10143, balance: gasCost - 1n });
+    const onMonad = new RelayerService(short.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees });
+    await expect(onMonad.relay(transact(feeNote(100n), keys.encryption.publicKey))).rejects.toMatchObject(refused);
     sent.length = 0;
-    await new RelayerService(enough.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees }).relay(transact(feeNote(100n), keys.encryption.publicKey));
-    expect(sent).toHaveLength(1);
+    for (const chainId of [31337, 10143]) {       // exactly the gas, far below Monad's 10 MON reserve
+      const enough = chainOf({ chainId, balance: gasCost });
+      await new RelayerService(enough.chain, { account: privateKeyToAccount(generatePrivateKey()), keys, fees }).relay(transact(feeNote(100n), keys.encryption.publicKey));
+    }
+    expect(sent).toHaveLength(2);
   });
 });

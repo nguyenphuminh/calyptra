@@ -24,9 +24,13 @@ const RELAYER_URL = `https://${RELAY_HOST}`;
 const NETWORK_ID = 'monad-testnet';
 /** Reference VM: 2 shared vCPU / 2 GB, Debian 12, 20 GB disk, static external IP. */
 const VM = { name: 'calyptra-relay', region: 'us-central1', zone: 'us-central1-a', machine: 'e2-small', tag: 'calyptra-relay' };
-/** The relayer account keeps Monad's 10 MON reserve plus gas billed on the declared limit (§11.2). */
-const RELAYER_MIN = parseEther('11');
-const RELAYER_TOP_UP = parseEther('12');
+/**
+ * The relayer account only pays gas, billed on the declared limit (§11.2): about 0.31 MON per relayed
+ * transfer (3.0M gas at ~102 gwei). Relayed calls send no MON, so Monad's 10 MON reserve does not apply.
+ * Below 2 MON (about 6 transfers) it is topped up to 5 MON.
+ */
+const RELAYER_MIN = parseEther('2');
+const RELAYER_TARGET = parseEther('5');
 /** The cloud CLI (Google Cloud reference implementation); its path can be overridden. */
 const CLOUD_CLI = process.env.CALYPTRA_CLOUD_CLI ?? 'gcloud';
 
@@ -136,13 +140,14 @@ async function fundRelayer(wallet: RelayWallet): Promise<void> {
   }
   const key = (await readFile(FUNDER_KEY_FILE, 'utf8')).trim();
   const funder = privateKeyToAccount((key.startsWith('0x') ? key : `0x${key}`) as Hex);
+  const value = RELAYER_TARGET - balance;
   const hash = await createWalletClient({ account: funder, chain, transport: http(n.rpcUrl) }).sendTransaction({
     to: wallet.relayerAccount,
-    value: RELAYER_TOP_UP,
+    value,
     gas: 21_000n, // Monad bills the declared limit: a plain transfer needs exactly 21000
   });
   await client.waitForTransactionReceipt({ hash });
-  console.log(`topped up with ${formatEther(RELAYER_TOP_UP)} MON from ${funder.address} (${hash})`);
+  console.log(`topped up to ${formatEther(RELAYER_TARGET)} MON with ${formatEther(value)} MON from ${funder.address} (${hash})`);
 }
 
 /** 6. Compute API, static IP, firewall for 80 (ACME) and 443 (HTTPS + WSS), the VM. Returns its IP. */

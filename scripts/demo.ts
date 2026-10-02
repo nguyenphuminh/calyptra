@@ -24,11 +24,11 @@ const PASSWORD = 'calyptra-demo';
 /** Relayer fees of the demo node: the desktop defaults (0.35 MON, 0.01 AUSD). */
 const RELAYER_FEES = { native: '0.35', stablecoin: '0.01' };
 /**
- * Gas money of the demo's relayer account. On Monad an account must keep a 10 MON reserve and gas is
- * billed on the declared limit (§11.2), so it holds the reserve plus room for relayed transactions.
+ * Gas money of the demo's relayer account: gas is billed on the declared limit (§11.2), about 0.31 MON
+ * per relayed transfer. Relayed calls send no MON, so Monad's 10 MON reserve does not apply to it.
  */
 const RELAYER_FUNDING = '20';
-const RELAYER_HINT = { below: parseEther('11'), send: '12' };
+const RELAYER_HINT = { below: parseEther('2'), send: '5' };
 /** The demo merchant's offer (§11.5 placeholder prices); it runs only with a DASHSCOPE_API_KEY. */
 const MERCHANT_OFFER = join(REPO, 'scripts', 'live', 'merchant-offer.json');
 

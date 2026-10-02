@@ -26,7 +26,7 @@ export function Deposit() {
   return (
     <Modal title="Add money" onClose={closeTo('#/wallet')}>
       <Notice>
-        Moves money from your account balance into your private balance. Your account pays the network fee in MON, so keep about 10 MON there.
+        Moves money from your account balance into your private balance. Your account pays the network fee in MON, so keep a little MON there.
       </Notice>
       <TokenSelect value={token} onChange={setToken} />
       <AmountField label="Amount" token={token} value={amount} onChange={setAmount} presets={presetsOf(token)} />

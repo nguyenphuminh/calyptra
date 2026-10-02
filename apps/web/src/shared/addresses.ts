@@ -4,7 +4,7 @@
 
 export const SHIELDED_ADDRESS_TEXT = 'Your Calyptra ID. Share it to get paid privately: nobody else can see payments to it.';
 export const PUBLIC_ADDRESS_TEXT =
-  'Your account address. To add money, send AUSD here from another wallet, such as MetaMask, then move it into your private balance. Keep about 10 MON here for network fees. Everyone can see this address and its balance.';
+  'Your account address. To add money, send AUSD here from another wallet, such as MetaMask, then move it into your private balance. Keep a little MON here for network fees. Everyone can see this address and its balance.';
 
 /** An address short enough to read at a glance: its start and end, as wallets show them. The full one is copied. */
 export function shortAddress(address: string): string {

@@ -50,8 +50,8 @@ describe('friendlyError', () => {
     expect(friendlyError(new AppError(401, 'WRONG_PASSWORD', 'Wrong password'))).toBe('Wrong password');
     expect(friendlyError(new AppError(403, 'PAYMENT_DECLINED', 'The payment was not confirmed'))).toBe('The payment was not confirmed');
     expect(friendlyError(new AppError(400, 'AMOUNT_TOO_LARGE', 'The most you can add at once is 18.44 MON'))).toBe('The most you can add at once is 18.44 MON');
-    const reserve = 'Keep at least 10 MON in this account for network fees; add less, or top it up first';
-    expect(friendlyError(new AppError(409, 'RESERVE_TOO_LOW', reserve))).toBe(reserve);
+    const short = 'This account does not have enough MON for this amount plus the network fee';
+    expect(friendlyError(new AppError(409, 'INSUFFICIENT_PUBLIC_FUNDS', short))).toBe(short);
     expect(friendlyError(new AppError(500, 'SOMETHING_NEW', 'Something new happened'))).toBe('Something new happened');
     expect(friendlyError(new Error('could not load /artifacts/transfer.wasm'))).toBe('could not load /artifacts/transfer.wasm');
     expect(friendlyError('plain text')).toBe('plain text');

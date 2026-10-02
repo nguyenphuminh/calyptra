@@ -1,14 +1,15 @@
 // Test money for the live tier (all-ref §9.22, §10.5, §10 Porting notes): a funder key outside the
 // repository pays the test wallets on Monad testnet, one transaction at a time, and gets back what a run
-// leaves in their accounts. Monad bills the declared gas limit and every sending account keeps a 10 MON
-// reserve, so funding and sweeping price gas on the limit and leave the reserve in place.
+// leaves in their accounts. Monad bills the declared gas limit, so funding and sweeping price gas on the
+// limit. A sweep empties the account below Monad's 10 MON reserve, which the emptying exception allows
+// when the account sent nothing else in the last 3 blocks.
 import { appendFileSync, chmodSync, mkdirSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import {
   createPublicClient, createWalletClient, defineChain, http, parseEther, parseUnits, formatEther, type Address, type Hex,
 } from 'viem';
 import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
-import { BUILT_IN_NETWORKS, MONAD_RESERVE_BALANCE } from '../../packages/framework/src/index.ts';
+import { BUILT_IN_NETWORKS, MONAD_RESERVE_BLOCKS } from '../../packages/framework/src/index.ts';
 import { REPO } from '../../scripts/lib/devnode.ts';
 
 const found = BUILT_IN_NETWORKS.find((n) => n.id === 'monad-testnet');
@@ -102,21 +103,25 @@ export function rememberWallet(name: string, phrase: string): void {
 
 /**
  * Returns the public money of the phrase's first account to the funder: all its AUSD, then its MON less
- * the transfer's gas (billed on the limit) and the 10 MON reserve the account must keep.
+ * exactly the transfer's gas (billed on the limit). The MON transfer goes below Monad's reserve, so it is
+ * sent once the account's latest transaction is 3 blocks old (the emptying exception).
  */
 export async function sweepPublic(phrase: string): Promise<string> {
   const account = mnemonicToAccount(phrase);
   const wallet = createWalletClient({ account, chain, transport: http(network.rpcUrl) });
   const to = funder();
+  let last = await client.getBlockNumber({ cacheTime: 0 }); // whatever the account sent before is at most here
   const stable = await stablecoinBalance(account.address);
   if (stable > 0n) {
     const gas = withMargin(await client.estimateContractGas({ address: stablecoin, abi: ERC20_ABI, functionName: 'transfer', args: [to, stable], account }));
-    await client.waitForTransactionReceipt({ hash: await wallet.writeContract({ address: stablecoin, abi: ERC20_ABI, functionName: 'transfer', args: [to, stable], gas }) });
+    const hash = await wallet.writeContract({ address: stablecoin, abi: ERC20_ABI, functionName: 'transfer', args: [to, stable], gas });
+    last = (await client.waitForTransactionReceipt({ hash })).blockNumber;
   }
+  while ((await client.getBlockNumber({ cacheTime: 0 })) < last + MONAD_RESERVE_BLOCKS) await new Promise((resolve) => setTimeout(resolve, 300));
   const balance = await client.getBalance({ address: account.address });
   const maxFeePerGas = (await client.estimateFeesPerGas()).maxFeePerGas * 2n;
-  const value = balance - TRANSFER_GAS * maxFeePerGas - MONAD_RESERVE_BALANCE;
-  if (value <= parseEther('0.0001')) return `${account.address}: ${formatEther(balance)} MON left (dust and reserve)`;
+  const value = balance - TRANSFER_GAS * maxFeePerGas;
+  if (value <= parseEther('0.0001')) return `${account.address}: ${formatEther(balance)} MON left (dust)`;
   await client.waitForTransactionReceipt({
     hash: await wallet.sendTransaction({ to, value, gas: TRANSFER_GAS, maxFeePerGas, maxPriorityFeePerGas: 0n }),
   });

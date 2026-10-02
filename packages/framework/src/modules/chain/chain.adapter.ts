@@ -1,12 +1,12 @@
 import {
   BaseError, ContractFunctionRevertedError, ExecutionRevertedError, HttpRequestError, RpcRequestError, TimeoutError,
-  createPublicClient, createWalletClient, defineChain, formatEther, http, zeroAddress,
+  createPublicClient, createWalletClient, defineChain, http, zeroAddress,
   type Address, type Chain, type Hex, type LocalAccount, type PublicClient,
 } from 'viem';
 import { AppError, isAppError } from '../../shared/errors/AppError.ts';
 import { disputesAbi, erc20Abi, poolAbi } from './chain.abi.ts';
 import type { NetworkConfig } from './chain.config.ts';
-import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT, reserveBalanceOf } from './chain.gas.ts';
+import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT, MONAD_RESERVE_BLOCKS, reserveBalanceOf } from './chain.gas.ts';
 
 export interface CommitmentEvent { commitment: bigint; leafIndex: number; ciphertext: Hex; blockNumber: bigint }
 export interface Dispute { pending: boolean; nonce: bigint; stateHash: bigint; deadline: bigint }
@@ -20,6 +20,10 @@ const LOG_RPC_WINDOW = 100_000n;
 const MIN_LOG_RPC_WINDOW = 500n;
 /** An endpoint that failed is passed over this long before the more preferred ones are tried again. */
 const RETRY_AFTER_MS = 60_000;
+/** A native deposit below Monad's reserve waits, polling this often and at most this long, until the
+ *  account's previous transaction is MONAD_RESERVE_BLOCKS blocks old (the emptying exception). */
+const EMPTYING_POLL_MS = 300;
+const EMPTYING_WAIT_MS = 10_000;
 
 /** The network's own RPC endpoints, in order: the main one, then the others it lists. */
 export const defaultRpcUrls = (network: NetworkConfig): string[] => [network.rpcUrl, ...(network.backupRpcUrls ?? [])];
@@ -84,6 +88,8 @@ export class ChainAdapter {
   private readonly eventEndpoints: Endpoint[];
   private readonly disputeMirror = { scannedTo: -1n, disputes: new Map<bigint, Dispute>(), finalized: new Set<bigint>() };
   private mirroring: Promise<void> | null = null;
+  /** Per sending address (lowercase), the block of the receipt of the last transaction it sent here. */
+  private readonly lastSent = new Map<string, bigint>();
 
   constructor(network: NetworkConfig, options: ChainAdapterOptions = {}) {
     this.network = network;
@@ -294,10 +300,22 @@ export class ChainAdapter {
 
   // --- the deposit (the only transaction the user's own address sends) ---------------------------
 
-  private async confirm(endpoint: Endpoint, hash: Hex): Promise<Hex> {
+  private async confirm(endpoint: Endpoint, sender: Address, hash: Hex): Promise<Hex> {
     const receipt = await endpoint.client.waitForTransactionReceipt({ hash });
+    this.lastSent.set(sender.toLowerCase(), receipt.blockNumber);     // sent, even if it reverted
     if (receipt.status !== 'success') throw new AppError(502, 'TRANSACTION_FAILED', `Transaction ${hash} failed`);
     return hash;
+  }
+
+  /** Waits until the sender's last transaction here is MONAD_RESERVE_BLOCKS blocks old (the emptying exception). */
+  private async lastSentSettled(endpoint: Endpoint, sender: Address): Promise<void> {
+    const last = this.lastSent.get(sender.toLowerCase());
+    if (last === undefined) return;
+    const deadline = Date.now() + EMPTYING_WAIT_MS;
+    while ((await endpoint.client.getBlockNumber({ cacheTime: 0 })) < last + MONAD_RESERVE_BLOCKS) {
+      if (Date.now() >= deadline) throw new AppError(503, 'CHAIN_STALLED', 'The network has not moved on since this account’s last transaction; try again in a moment');
+      await new Promise((resolve) => setTimeout(resolve, EMPTYING_POLL_MS));
+    }
   }
 
   /** The account deposits; the stablecoin is approved first (exactly `amount`), the native coin is sent with the deposit. */
@@ -308,23 +326,22 @@ export class ChainAdapter {
     if (token !== 0n) {
       const allowance = await endpoint.client.readContract({ address: tokenAddress(token), abi: erc20Abi, functionName: 'allowance', args: [account.address, pool] });
       if (allowance < amount) {
-        await this.confirm(endpoint, await wallet.writeContract({
+        await this.confirm(endpoint, account.address, await wallet.writeContract({
           account, chain: this.chain, address: tokenAddress(token), abi: erc20Abi, functionName: 'approve', args: [pool, amount],
           gas: APPROVE_GAS_LIMIT,
         }));
       }
     }
-    // Monad's reserve: the native coin sent plus the fee budget must leave the reserve in the account
-    // (§5 porting notes). The fees checked are the fees sent.
-    const reserve = token === 0n ? reserveBalanceOf(this.network.chainId) : 0n;
+    // A native deposit needs the coin sent plus the fee budget (the declared limit; §5 porting notes).
+    // The fees checked are the fees sent. A stablecoin deposit sends no MON: Monad's reserve never applies.
     let fees: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint } | undefined;
-    if (reserve > 0n) {
+    if (token === 0n) {
       const { maxFeePerGas, maxPriorityFeePerGas } = await endpoint.client.estimateFeesPerGas();
       fees = { maxFeePerGas, maxPriorityFeePerGas };
-      const balance = await endpoint.client.getBalance({ address: account.address });
-      if (balance - amount - DEPOSIT_GAS_LIMIT * maxFeePerGas < reserve) {
-        throw new AppError(409, 'RESERVE_TOO_LOW', `Keep at least ${formatEther(reserve)} MON in this account for network fees; add less, or top it up first`);
-      }
+      const left = (await endpoint.client.getBalance({ address: account.address })) - amount - DEPOSIT_GAS_LIMIT * maxFeePerGas;
+      if (left < 0n) throw new AppError(409, 'INSUFFICIENT_PUBLIC_FUNDS', 'This account does not have enough MON for this amount plus the network fee');
+      // Below Monad's reserve the deposit relies on the emptying exception: no other transaction from the account in the last 3 blocks.
+      if (left < reserveBalanceOf(this.network.chainId)) await this.lastSentSettled(endpoint, account.address);
     }
     const call = {
       account, address: pool, abi: poolAbi, functionName: 'deposit', args: [tokenAddress(token), amount, inner, ciphertext],
@@ -333,6 +350,6 @@ export class ChainAdapter {
     // With an explicit gas limit nothing is estimated, and Monad charges the whole limit of a reverted
     // transaction: simulate first, so a deposit that would revert fails here (viem error) and costs nothing.
     await endpoint.client.simulateContract(call);
-    return this.confirm(endpoint, await wallet.writeContract({ ...call, chain: this.chain, gas: DEPOSIT_GAS_LIMIT, ...fees }));
+    return this.confirm(endpoint, account.address, await wallet.writeContract({ ...call, chain: this.chain, gas: DEPOSIT_GAS_LIMIT, ...fees }));
   }
 }

@@ -1,13 +1,13 @@
 // Live tests on Monad testnet (all-ref §10.5, §10.7 LIVE rows, §11.10 Stage 2): the deployed website with
 // the live relayer and libp2p relay. Stage 2 only: run after the deployment, with CALYPTRA_LIVE_URL and the
 // funder key in ~/.calyptra-secrets/funder.key. It never starts a dispute (the live window is 3-7 days).
-// Money moves in dollars (AUSD, the main currency, §11.2/§11.6); MON only pays the accounts' network fees
-// and the reserve. Every expected amount is computed from the relayer's live quote.
+// Money moves in dollars (AUSD, the main currency, §11.2/§11.6); MON only pays the accounts' network fees.
+// Every expected amount is computed from the relayer's live quote.
 import { statSync } from 'node:fs';
 import type { Browser, Page } from '@playwright/test';
 import { formatEther, parseUnits, type Address } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT, MONAD_RESERVE_BALANCE, chainIdAt, defaultRpcUrls } from '../../packages/framework/src/index.ts';
+import { APPROVE_GAS_LIMIT, DEPOSIT_GAS_LIMIT, chainIdAt, defaultRpcUrls } from '../../packages/framework/src/index.ts';
 import { REPO } from '../../scripts/lib/devnode.ts';
 import {
   addMoney, card, confirmRelayed, createInvite, createWallet, expect, openAction, openSettings, openTab, openTabs, openWallet, PASSWORD,
@@ -136,10 +136,11 @@ test.describe.serial('money on testnet', () => {
     decimals = await stablecoinDecimals();
     fee = await stableFee();
     if ((await stablecoinBalance(funder())) < units('2')) await faucetStablecoin();
-    // Adding money is an approve and a deposit from Alice's account, billed on their gas limits; the account keeps its reserve.
+    // Adding money is an approve and a deposit from Alice's account, billed on their gas limits. They send no
+    // MON, so Monad's 10 MON reserve does not apply: the account needs only their gas.
     const { maxFeePerGas } = await client.estimateFeesPerGas();
     const gas = (APPROVE_GAS_LIMIT + DEPOSIT_GAS_LIMIT) * maxFeePerGas * 2n;
-    await fund(mnemonicToAccount(alicePhrase).address, formatEther(MONAD_RESERVE_BALANCE + gas), '2');
+    await fund(mnemonicToAccount(alicePhrase).address, formatEther(gas), '2');
   });
 
   test.afterAll(async () => {

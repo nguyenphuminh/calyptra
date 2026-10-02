@@ -11,7 +11,7 @@ import {
 } from 'viem';
 import { AppError } from '../../shared/errors/AppError.ts';
 import { CIPHERTEXT_SIZE, decryptNote, noteCommitment } from '../../shared/protocol/index.ts';
-import { disputesAbi, poolAbi, reserveBalanceOf, tokenAddress, type ChainAdapter } from '../chain/index.ts';
+import { disputesAbi, poolAbi, tokenAddress, type ChainAdapter } from '../chain/index.ts';
 import { shieldedAddressOf, type PoolKeys } from '../keys/index.ts';
 import { RelayRequestSchema, type RelayKind, type RelayRequest, type RelayResult, type RelayerInfo } from './relayer.schema.ts';
 
@@ -44,7 +44,8 @@ export interface RelayerOptions {
   fees: Record<string, bigint>;
   /** Gas limit per kind of call (default DEFAULT_GAS_LIMITS). */
   gasLimits?: Partial<Record<RelayKind, bigint>>;
-  /** Native balance the account keeps untouched (default: 10 MON on Monad networks, 0 elsewhere). */
+  /** Native balance the account keeps on top of each transaction's gas, as the operator's margin (default 0:
+   *  relayed calls send no MON, so Monad's 10 MON reserve never makes them revert). */
   reserve?: bigint;
 }
 
@@ -70,7 +71,7 @@ export class RelayerService {
     this.chain = chain;
     this.options = options;
     this.gasLimits = { ...DEFAULT_GAS_LIMITS, ...options.gasLimits };
-    this.reserve = options.reserve ?? reserveBalanceOf(chain.network.chainId);
+    this.reserve = options.reserve ?? 0n;
   }
 
   info(): RelayerInfo {
@@ -130,11 +131,11 @@ export class RelayerService {
       const reason = reverted instanceof ContractFunctionRevertedError ? (reverted.data?.errorName ?? reverted.shortMessage) : 'unknown reason';
       throw new AppError(422, 'WOULD_REVERT', `The transaction would fail on-chain: ${reason}`);
     }
-    // Monad bills the declared gas limit and requires the account to keep its reserve after paying it.
+    // Monad bills the declared gas limit: the balance pays it, plus the operator's reserve if one is set.
     const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas();
     const balance = await client.getBalance({ address: account.address });
     if (balance < this.reserve + gas * maxFeePerGas) {
-      throw new AppError(503, 'RESERVE_TOO_LOW', 'The relayer’s balance is below its reserve; try again later');
+      throw new AppError(503, 'RESERVE_TOO_LOW', 'The relayer’s balance cannot pay for gas right now; try again later');
     }
     const nonce = this.nonce ?? (await client.getTransactionCount({ address: account.address, blockTag: 'latest' }));
     const wallet = createWalletClient({ account, chain: this.chain.chain, transport: http(rpcUrl) });

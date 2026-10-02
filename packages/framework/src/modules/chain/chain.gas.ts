@@ -12,10 +12,14 @@ export const APPROVE_GAS_LIMIT = 100_000n;
  *  (Gas.t.sol DEPOSIT_GAS_LIMIT). */
 export const DEPOSIT_GAS_LIMIT = 1_350_000n;
 
-/** Monad's reserve-balance rule: an account keeps 10 MON for the fees of transactions in flight, or its
- *  transactions can fail while still paying gas. Other chains (anvil) have no reserve. */
+/** Monad's reserve balance (docs.monad.xyz/developer-essentials/reserve-balance): a transaction that sends
+ *  MON reverts, still paying its gas, when it leaves the sender below min(its balance, 10 MON) less the
+ *  transaction's own gas, unless the sender sent no other transaction in the last 3 blocks (the emptying
+ *  exception). A transaction that sends no MON never reverts because of it. Other chains (anvil) have none. */
 export const MONAD_RESERVE_BALANCE = 10n ** 19n;
+/** The emptying exception's window, k = 3 blocks (about 1.2 s). */
+export const MONAD_RESERVE_BLOCKS = 3n;
 const MONAD_CHAIN_IDS = new Set([10143, 143]);   // testnet, mainnet
 
-/** The native balance an account of this chain must keep untouched. */
+/** The reserve balance of this chain: 10 MON on Monad, none elsewhere. */
 export const reserveBalanceOf = (chainId: number): bigint => (MONAD_CHAIN_IDS.has(chainId) ? MONAD_RESERVE_BALANCE : 0n);
