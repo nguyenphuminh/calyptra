@@ -45,9 +45,9 @@ describe('loadConfig', () => {
     expect(config).toMatchObject({ network: 'devnode', networkFile: 'n.json', logLevel: 'warn' });
   });
 
-  it('quotes the default relayer fees (0.25 MON, 0.01 AUSD) when none are given', () => {
+  it('quotes the default relayer fees (0.35 MON, 0.01 AUSD) when none are given', () => {
     const config = loadConfig(['start', '--relayer', '--relayer-account', '0xabc'], noEnv);
-    expect(config.relayer).toMatchObject({ enabled: true, feeNative: '0.25', feeStable: '0.01' });
+    expect(config.relayer).toMatchObject({ enabled: true, feeNative: '0.35', feeStable: '0.01' });
   });
 
   it('reads merchant mode and the server-side secrets from the environment', () => {

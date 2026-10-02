@@ -30,7 +30,10 @@ export function ShieldedHero() {
       </div>
       <div className="big-amounts">
         <span className="big" data-testid="shielded-stablecoin" title={formatAmount('stablecoin', stablecoin)}>{formatDollars(stablecoin)}</span>
-        <span className="medium"><span data-testid="shielded-native" title={formatAmount('native', native)}>{formatAmount('native', native)}</span></span>
+        {/* Dollars are the hero; MON shows only when the user holds some privately (product-owner decision). */}
+        {native > 0n ? (
+          <span className="medium"><span data-testid="shielded-native" title={formatAmount('native', native)}>{formatAmount('native', native)}</span></span>
+        ) : null}
       </div>
       {network.contracts ? null : <Notice tone="warn">Calyptra is not available on {network.name} yet.</Notice>}
       <ErrorNote error={sync.error} />

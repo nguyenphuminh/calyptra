@@ -21,8 +21,8 @@ import { deployTestToken } from './lib/test-token.ts';
 
 const PORTS = { rpc: 8645, relayer: 8646, relay: 8647, web: 5173 };
 const PASSWORD = 'calyptra-demo';
-/** Relayer fees of the demo node: the §11.2 defaults (0.25 MON, 0.01 AUSD). */
-const RELAYER_FEES = { native: '0.25', stablecoin: '0.01' };
+/** Relayer fees of the demo node: the desktop defaults (0.35 MON, 0.01 AUSD). */
+const RELAYER_FEES = { native: '0.35', stablecoin: '0.01' };
 /**
  * Gas money of the demo's relayer account. On Monad an account must keep a 10 MON reserve and gas is
  * billed on the declared limit (§11.2), so it holds the reserve plus room for relayed transactions.

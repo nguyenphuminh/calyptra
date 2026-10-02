@@ -27,7 +27,7 @@ Options:
   --rpc-token-file <path>       Where the access token is written (default ~/.config/calyptra/rpc.json)
   --relayer                     Act as a transaction relayer
   --relayer-account <account>   Account that submits relayed transactions (never one with deposits)
-  --relayer-fee-native <amount> Quoted fee in the native coin (default 0.25)
+  --relayer-fee-native <amount> Quoted fee in the native coin (default 0.35)
   --relayer-fee-stablecoin <amount> Quoted fee in the stablecoin (default 0.01)
   --relayer-host <host>         (default 0.0.0.0)
   --relayer-port <port>         (default 8646)
@@ -42,8 +42,8 @@ Options:
   --tick <seconds>              Background sync and channel watching interval (default 15)
   --log-level <level>           (default info)`;
 
-/** Relayer fees quoted when the operator sets none (§11.2 defaults: 0.25 MON, 0.01 AUSD). */
-export const DEFAULT_RELAYER_FEES = { native: '0.25', stablecoin: '0.01' } as const;
+/** Relayer fees quoted when the operator sets none: 0.35 MON (covers a 3.0M gas limit at ~102 gwei), 0.01 AUSD. */
+export const DEFAULT_RELAYER_FEES = { native: '0.35', stablecoin: '0.01' } as const;
 
 const port = z.coerce.number().int().min(1).max(65535);
 const decimal = z.string().regex(/^\d+(\.\d+)?$/, 'expected a decimal amount such as 0.001');
