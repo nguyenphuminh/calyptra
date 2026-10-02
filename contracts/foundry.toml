@@ -1,0 +1,21 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.37"
+evm_version = "prague"
+optimizer = true
+optimizer_runs = 200
+# Monad gas schedule (cold storage access, ~5x BN254 precompile prices) for tests and gas reports.
+network = "monad"
+# Monad's contract code-size limit (128 KB) instead of EIP-170's 24 KB.
+code_size_limit = 131072
+remappings = ["forge-std/=lib/forge-std/src/", "poseidon-solidity/=lib/poseidon-solidity/"]
+# The tests replay proof fixtures written by contracts/scripts/fixtures.ts.
+fs_permissions = [{ access = "read", path = "../circuits" }]
+
+[lint]
+# Lint our own sources only; vendored code under lib/ keeps its upstream style.
+ignore = ["lib/**"]
