@@ -1,0 +1,8 @@
+{
+  "kind": "ai-chat",
+  "title": "Calyptra AI · powered by Qwen",
+  "token": "stablecoin",
+  "ratePerSecond": "2000",
+  "minFunding": "1000000",
+  "graceSeconds": 3
+}
