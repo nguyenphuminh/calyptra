@@ -581,6 +581,12 @@ export class ChannelService {
     const { pool, keys } = this.deps;
     const [cA, cB] = contributionCommitments(r);
     const [, noteB] = contributionsOf(r);
+    // A's contribution already spent: a dispute settled the channel (with state 0) before it went live.
+    // Nothing is funded any more; the dispute service settles it (§6.11.8 A).
+    if (await this.settledOnChain(r)) {
+      r.status = 'disputing';
+      return;
+    }
     // B funds only after A's contribution is in the pool: otherwise no state could ever be disputed
     // (each lists A's contribution) and B's contribution could not be recovered.
     if (r.role === 'B' && noteB && pool.hasCommitment(cA) && !pool.hasCommitment(cB)) {

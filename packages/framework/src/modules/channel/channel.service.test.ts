@@ -409,8 +409,10 @@ describe('DisputeService', () => {
     expect(await t.alice.disputes.tick(t.alice.relayer)).toEqual([]);
     expect(t.alice.channels.get(t.id).status).toBe('settled');
     expect(t.alice.balance()).toBe(before + 20n - FEE);
+    expect(await t.bob.channels.tick(t.bob.relayer)).toEqual([]); // as a host ticks: channels, then disputes
     expect(await t.bob.disputes.tick(t.bob.relayer)).toEqual([]);
     expect(t.bob.channels.get(t.id).status).toBe('settled');
+    expect(t.bob.relayer.submitted).toEqual([]); // he never funds a channel a dispute already settled
   });
 
   it('B: answers an old state with the latest; the side holding both signatures finalizes, the other adopts its payout', async () => {

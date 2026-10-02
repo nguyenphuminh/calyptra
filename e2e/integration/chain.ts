@@ -6,6 +6,8 @@ import {
   BaseError,
   ContractFunctionRevertedError,
   bytesToHex,
+  createTestClient,
+  http,
   parseEther,
   type Abi,
   type Address,
@@ -25,7 +27,7 @@ import {
   type NotePreimage,
 } from '../../packages/framework/src/shared/protocol/index.ts';
 import { deployCalyptra, type Deployment } from '../../scripts/lib/deploy.ts';
-import { REPO, devPublicClient, devWalletClient } from '../../scripts/lib/devnode.ts';
+import { DEVNODE_RPC, REPO, devChain, devPublicClient, devWalletClient } from '../../scripts/lib/devnode.ts';
 import { deployTestToken } from '../../scripts/lib/test-token.ts';
 
 export type Wallet = ReturnType<typeof devWalletClient>;
@@ -35,10 +37,11 @@ const ARTIFACTS = `${REPO}/packages/framework/artifacts`;
 
 export const client = devPublicClient();
 export const dev: Wallet = devWalletClient();
+const testClient = createTestClient({ mode: 'anvil', chain: devChain, transport: http(DEVNODE_RPC) });
 
 // The dev account sends one transaction at a time: a second one must wait for the first receipt.
 let devQueue: Promise<unknown> = Promise.resolve();
-function devSend<T>(task: () => Promise<T>): Promise<T> {
+export function devSend<T>(task: () => Promise<T>): Promise<T> {
   const next = devQueue.then(task, task);
   devQueue = next.catch(() => undefined);
   return next;
@@ -102,6 +105,18 @@ export async function mineBlock(): Promise<void> {
     const hash = await dev.sendTransaction({ to: dev.account.address, value: 0n });
     await client.waitForTransactionReceipt({ hash });
   });
+}
+
+/** Moves the dev chain's clock forward and mines a block at the new time (anvil only): a dispute window
+ *  passes at once instead of being slept through (the framework compares deadlines with the latest block). */
+export async function warp(seconds: number): Promise<void> {
+  await testClient.increaseTime({ seconds });
+  await testClient.mine({ blocks: 1 });
+}
+
+/** Mines `blocks` empty blocks at once (anvil only), e.g. to make event history span many query windows. */
+export async function mineBlocks(blocks: number): Promise<void> {
+  await testClient.mine({ blocks });
 }
 
 export interface SendRequest {
