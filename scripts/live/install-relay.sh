@@ -46,7 +46,8 @@ if [ ! -d /var/lib/calyptra/node ]; then
   tar -xzf "$HERE/node-data.tgz" -C /var/lib/calyptra
   chown -R calyptra:calyptra /var/lib/calyptra/node
 fi
-install -d -m 700 /etc/calyptra
+# 711: the service user may open files here by name (the merchant offer); node.env stays root-only (600).
+install -d -m 711 /etc/calyptra
 install -m 600 "$HERE/node.env" /etc/calyptra/node.env
 
 # 4. The release: committed files only, production dependencies, the three newest kept.
