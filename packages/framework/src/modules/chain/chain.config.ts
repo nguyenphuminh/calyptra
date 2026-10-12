@@ -31,12 +31,10 @@ export const NetworkConfigSchema = z.object({
 export type NetworkConfig = z.infer<typeof NetworkConfigSchema>;
 
 /**
- * The built-in network. Values that only exist after the Stage 2 deployment (§11.10, §13.2) are left
- * out until then, so the network stays valid and simply reports "not deployed" (no contracts) and runs
- * without channels (no libp2p relay). At deployment, fill in:
+ * The built-in network. The contracts are deployed (2026-10-12, `npm run deploy:network -- --network
+ * monad-testnet`). Values that only exist once the relay host is up (§11.10, §13.2) are left out until
+ * then, so the network runs without channels (no libp2p relay) and without a relayer. Then fill in:
  *   logRpcUrls:   ['https://relay.<DOMAIN>/hyperrpc'],
- *   contracts:    { pool: '<after deploy>', disputes: '<after deploy>', deployBlock: <after deploy> },
- *                 (printed by `npm run deploy:network -- --network monad-testnet`)
  *   relayers:     ['https://relay.<DOMAIN>'],
  *   libp2pRelays: ['/dns4/relay.<DOMAIN>/tcp/443/wss/p2p/<relay peer id>'],
  *   merchants:    [<merchant-card code of the demo merchant>] (§11.5),
@@ -51,6 +49,11 @@ export const BUILT_IN_NETWORKS: readonly NetworkConfig[] = [
     backupRpcUrls: ['https://rpc.ankr.com/monad_testnet'],
     explorerUrl: 'https://testnet.monadvision.com',
     stablecoin: '0xa9012a055bd4e0edff8ce09f960291c09d5322dc', // AUSD, 6 decimals (checked on chain 2026-10-11)
+    contracts: {
+      pool: '0x949a9e04fa9a0a619855c1cbf79da25d73152c13',
+      disputes: '0xe33b1144efd35596a5cca72fc52941a442436145',
+      deployBlock: 70436926n,
+    },
     relayers: [],
     libp2pRelays: [],
     merchants: [],

@@ -295,7 +295,11 @@ describe('chain config', () => {
     const [monad] = BUILT_IN_NETWORKS;
     expect(monad).toMatchObject({ id: 'monad-testnet', name: 'Monad Testnet', chainId: 10143, rpcUrl: 'https://testnet-rpc.monad.xyz' });
     expect(NetworkConfigSchema.parse(monad)).toEqual(monad);
-    expect(monad?.contracts).toBeUndefined();   // filled in at deployment
+    expect(monad?.contracts).toEqual({   // deployed 2026-10-12
+      pool: '0x949a9e04fa9a0a619855c1cbf79da25d73152c13',
+      disputes: '0xe33b1144efd35596a5cca72fc52941a442436145',
+      deployBlock: 70436926n,
+    });
   });
 
   it('parses a string deployBlock and the optional history endpoints', () => {
