@@ -36,7 +36,7 @@ Options:
   --libp2p-relay-port <port>    (default 8647)
   --libp2p-relay-announce <a,b> Public addresses to give peers instead of the listen address,
                                 e.g. /dns4/relay.example/tcp/443/wss behind a TLS proxy
-  --merchant                    Sell a service paid by the second (needs DASHSCOPE_API_KEY)
+  --merchant                    Sell a service paid by the second (needs GEMINI_API_KEY)
   --merchant-offer <path>       The merchant's offer (JSON)
   --no-shell                    Do not open the interactive shell
   --tick <seconds>              Background sync and channel watching interval (default 15)
@@ -89,7 +89,7 @@ export const ConfigSchema = z
       ctx.addIssue({ code: 'custom', message: '--merchant needs --merchant-offer <offer.json>' });
     }
     if (c.merchant.enabled && !c.merchant.apiKey) {
-      ctx.addIssue({ code: 'custom', message: '--merchant needs the DASHSCOPE_API_KEY environment variable' });
+      ctx.addIssue({ code: 'custom', message: '--merchant needs the GEMINI_API_KEY environment variable' });
     }
   });
 
@@ -179,7 +179,7 @@ export function loadConfig(argv: readonly string[], env: NodeJS.ProcessEnv = pro
     merchant: {
       enabled: values.merchant ?? false,
       offerFile: values['merchant-offer'],
-      apiKey: nonEmpty(env.DASHSCOPE_API_KEY),
+      apiKey: nonEmpty(env.GEMINI_API_KEY),
     },
     envioToken: nonEmpty(env.CALYPTRA_ENVIO_TOKEN),
     shell: values.shell ?? true,

@@ -51,7 +51,7 @@ describe('loadConfig', () => {
   });
 
   it('reads merchant mode and the server-side secrets from the environment', () => {
-    const env = { DASHSCOPE_API_KEY: 'k', CALYPTRA_ENVIO_TOKEN: 't' };
+    const env = { GEMINI_API_KEY: 'k', CALYPTRA_ENVIO_TOKEN: 't' };
     const config = loadConfig(['start', '--merchant', '--merchant-offer', 'offer.json'], env);
     expect(config.merchant).toEqual({ enabled: true, offerFile: 'offer.json', apiKey: 'k' });
     expect(config.envioToken).toBe('t');
@@ -66,8 +66,8 @@ describe('loadConfig', () => {
     expect(() => loadConfig(['launch'], noEnv)).toThrow();
     expect(() => loadConfig(['start', '--frobnicate'], noEnv)).toThrow();
     expect(() => loadConfig(['help', '--frobnicate'], noEnv)).toThrow();
-    expect(() => loadConfig(['start', '--merchant', '--merchant-offer', 'o.json'], noEnv)).toThrow(/DASHSCOPE_API_KEY/);
-    expect(() => loadConfig(['start', '--merchant'], { DASHSCOPE_API_KEY: 'k' })).toThrow(/--merchant-offer/);
+    expect(() => loadConfig(['start', '--merchant', '--merchant-offer', 'o.json'], noEnv)).toThrow(/GEMINI_API_KEY/);
+    expect(() => loadConfig(['start', '--merchant'], { GEMINI_API_KEY: 'k' })).toThrow(/--merchant-offer/);
   });
 
   it('maps the init source', () => {

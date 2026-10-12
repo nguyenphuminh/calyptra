@@ -49,7 +49,7 @@ function pipe(): { subscriber: PeerSession; merchant: PeerSession } {
 
 const STABLECOIN = '0x00000000000000000000000000000000000000aa';
 const CHANNEL = 'ab'.repeat(16);
-const offer = OfferSchema.parse({ kind: 'ai-chat', title: 'Calyptra AI · powered by Qwen', token: 'stablecoin', ratePerSecond: '1000', minFunding: '1000000' });
+const offer = OfferSchema.parse({ kind: 'ai-chat', title: 'Calyptra AI · powered by Gemini', token: 'stablecoin', ratePerSecond: '1000', minFunding: '1000000' });
 
 function setup(overrides: Partial<{ peerId: string; token: bigint; status: string }> = {}, service = new EchoServicePort()) {
   const channel = {

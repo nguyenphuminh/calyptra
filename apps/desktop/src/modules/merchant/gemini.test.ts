@@ -2,13 +2,13 @@ import { createServer } from 'node:http';
 import type { IncomingHttpHeaders, Server, ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { QWEN_ENDPOINT, QWEN_MAX_TOKENS, QWEN_MODEL, QwenAdapter } from './adapters/qwen.adapter.ts';
-import { SYSTEM_PROMPT, QwenChatService } from './qwen-chat.service.ts';
+import { GEMINI_ENDPOINT, GEMINI_MAX_TOKENS, GEMINI_MODEL, GEMINI_REASONING_EFFORT, GeminiAdapter } from './adapters/gemini.adapter.ts';
+import { SYSTEM_PROMPT, GeminiChatService } from './gemini-chat.service.ts';
 
-/** A stand-in for DashScope's OpenAI-compatible endpoint: records requests, streams a scripted reply. */
+/** A stand-in for Gemini's OpenAI-compatible endpoint: records requests, streams a scripted reply. */
 interface Seen {
   headers: IncomingHttpHeaders;
-  body: { model: string; stream: boolean; max_tokens: number; messages: { role: string; content: string }[] };
+  body: { model: string; stream: boolean; max_tokens: number; reasoning_effort: string; messages: { role: string; content: string }[] };
 }
 const seen: Seen[] = [];
 let reply: (res: ServerResponse) => void;
@@ -31,7 +31,7 @@ beforeAll(async () => {
     });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/compatible-mode/v1/chat/completions`;
+  endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1beta/openai/chat/completions`;
 });
 afterEach(() => {
   seen.length = 0;
@@ -46,14 +46,15 @@ const collect = async (pieces: AsyncIterable<string>): Promise<string[]> => {
   return out;
 };
 
-describe('QwenAdapter', () => {
-  it('targets the OpenAI-compatible DashScope endpoint with the Qwen model', () => {
-    expect(QWEN_ENDPOINT).toBe('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions');
-    expect(QWEN_MODEL).toBe('qwen3.8-max');
-    expect(QWEN_MAX_TOKENS).toBe(800);
+describe('GeminiAdapter', () => {
+  it('targets the OpenAI-compatible Gemini endpoint with the Gemini model, thinking off', () => {
+    expect(GEMINI_ENDPOINT).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+    expect(GEMINI_MODEL).toBe('gemini-3.5-flash');
+    expect(GEMINI_MAX_TOKENS).toBe(800);
+    expect(GEMINI_REASONING_EFFORT).toBe('none');
   });
 
-  it('streams the reply with the key, the model, stream: true and max_tokens 800', async () => {
+  it('streams the reply with the key, the model, stream: true, max_tokens 800 and no thinking', async () => {
     reply = (res) => {
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       // A role-only first event, a keep-alive comment and an event split across writes.
@@ -64,12 +65,28 @@ describe('QwenAdapter', () => {
       res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: ' there' } }] })}\n\n`);
       res.end('data: [DONE]\n\n');
     };
-    const qwen = new QwenAdapter({ apiKey: 'test-key', endpoint });
+    const gemini = new GeminiAdapter({ apiKey: 'test-key', endpoint });
     const messages = [{ role: 'user' as const, content: 'hi' }];
-    expect(await collect(qwen.stream(messages))).toEqual(['Hello', ' there']);
+    expect(await collect(gemini.stream(messages))).toEqual(['Hello', ' there']);
     expect(seen).toHaveLength(1);
     expect(seen[0]?.headers.authorization).toBe('Bearer test-key');
-    expect(seen[0]?.body).toEqual({ model: 'qwen3.8-max', messages, stream: true, max_tokens: 800 });
+    expect(seen[0]?.body).toEqual({ model: 'gemini-3.5-flash', messages, stream: true, max_tokens: 800, reasoning_effort: 'none' });
+  });
+
+  it('retries a busy or overloaded answer, then gives up with the last status', async () => {
+    const statuses = [503, 429];
+    reply = (res) => {
+      const status = statuses.shift();
+      if (status === undefined) return sse(res, ['Back']);
+      res.writeHead(status, { 'content-type': 'application/json' }).end('{"error":{"message":"busy"}}');
+    };
+    const gemini = new GeminiAdapter({ apiKey: 'k', endpoint, retryDelaysMs: [10, 10] });
+    expect(await collect(gemini.stream([{ role: 'user', content: 'hi' }]))).toEqual(['Back']);
+    expect(seen).toHaveLength(3);
+    seen.length = 0;
+    reply = (res) => res.writeHead(503).end('busy');
+    await expect(collect(gemini.stream([{ role: 'user', content: 'hi' }]))).rejects.toMatchObject({ message: 'The AI service answered with status 503' });
+    expect(seen).toHaveLength(3);
   });
 
   it('wraps upstream failures without revealing the key', async () => {
@@ -77,20 +94,20 @@ describe('QwenAdapter', () => {
       res.writeHead(401, { 'content-type': 'application/json' });
       res.end('{"error":{"message":"Incorrect API key provided"}}');
     };
-    const qwen = new QwenAdapter({ apiKey: 'secret-key', endpoint });
-    const failure = collect(qwen.stream([{ role: 'user', content: 'hi' }]));
+    const gemini = new GeminiAdapter({ apiKey: 'secret-key', endpoint });
+    const failure = collect(gemini.stream([{ role: 'user', content: 'hi' }]));
     await expect(failure).rejects.toMatchObject({ code: 'UPSTREAM_ERROR', statusCode: 502 });
     await expect(failure).rejects.not.toThrow(/secret-key/);
-    const down = new QwenAdapter({ apiKey: 'secret-key', endpoint: 'http://127.0.0.1:9/v1/chat/completions' });
+    const down = new GeminiAdapter({ apiKey: 'secret-key', endpoint: 'http://127.0.0.1:9/v1/chat/completions' });
     await expect(collect(down.stream([{ role: 'user', content: 'hi' }]))).rejects.toMatchObject({ code: 'UPSTREAM_ERROR' });
   });
 });
 
-describe('QwenChatService', () => {
+describe('GeminiChatService', () => {
   it('keeps each conversation in memory until its session ends', async () => {
     let answer = ['Paris', '.'];
     reply = (res) => sse(res, answer);
-    const chat = new QwenChatService(new QwenAdapter({ apiKey: 'k', endpoint }));
+    const chat = new GeminiChatService(new GeminiAdapter({ apiKey: 'k', endpoint }));
     const signal = new AbortController().signal;
     expect(await collect(chat.reply('chan-1', 'Capital of France?', signal))).toEqual(['Paris', '.']);
     answer = ['About 2 million.'];
@@ -114,7 +131,7 @@ describe('QwenChatService', () => {
       res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: 'first' } }] })}\n\n`);
       // never ends on its own
     };
-    const chat = new QwenChatService(new QwenAdapter({ apiKey: 'k', endpoint }));
+    const chat = new GeminiChatService(new GeminiAdapter({ apiKey: 'k', endpoint }));
     const abort = new AbortController();
     const pieces: string[] = [];
     const run = (async () => {
@@ -131,7 +148,7 @@ describe('QwenChatService', () => {
     reply = (res) => sse(res, ['ok']);
     const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((m) => vi.spyOn(console, m));
     const writes = vi.spyOn(process.stderr, 'write');
-    await collect(new QwenChatService(new QwenAdapter({ apiKey: 'k', endpoint })).reply('chan-4', 'private question', new AbortController().signal));
+    await collect(new GeminiChatService(new GeminiAdapter({ apiKey: 'k', endpoint })).reply('chan-4', 'private question', new AbortController().signal));
     for (const spy of [...spies, writes]) expect(spy).not.toHaveBeenCalled();
     vi.restoreAllMocks();
   });

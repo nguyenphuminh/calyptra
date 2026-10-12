@@ -29,7 +29,7 @@ const RELAYER_FEES = { native: '0.35', stablecoin: '0.01' };
  */
 const RELAYER_FUNDING = '20';
 const RELAYER_HINT = { below: parseEther('2'), send: '5' };
-/** The demo merchant's offer (§11.5 placeholder prices); it runs only with a DASHSCOPE_API_KEY. */
+/** The demo merchant's offer (§11.5 placeholder prices); it runs only with a GEMINI_API_KEY. */
 const MERCHANT_OFFER = join(REPO, 'scripts', 'live', 'merchant-offer.json');
 
 const argv = process.argv.slice(2);
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
       '--relayer-fee-native', RELAYER_FEES.native, '--relayer-fee-stablecoin', RELAYER_FEES.stablecoin,
       '--relayer-host', '127.0.0.1', '--relayer-port', String(PORTS.relayer),
       '--libp2p-relay', '--libp2p-relay-host', '127.0.0.1', '--libp2p-relay-port', String(PORTS.relay),
-      ...(process.env.DASHSCOPE_API_KEY ? ['--merchant', '--merchant-offer', MERCHANT_OFFER] : []),
+      ...(process.env.GEMINI_API_KEY ? ['--merchant', '--merchant-offer', MERCHANT_OFFER] : []),
     ],
     env,
   );
@@ -179,9 +179,9 @@ async function main(): Promise<void> {
     console.log('Disputes from the website use the 7-day window; the desktop client accepts windows from 10 s.');
   }
   if (desktop.ready.merchant) {
-    console.log(`\nThe Qwen AI chat merchant runs on the desktop client: http://127.0.0.1:${PORTS.web}/#/merchant/${desktop.ready.merchant}`);
+    console.log(`\nThe Gemini AI chat merchant runs on the desktop client: http://127.0.0.1:${PORTS.web}/#/merchant/${desktop.ready.merchant}`);
   } else {
-    console.log('\nSet DASHSCOPE_API_KEY to also run the Qwen AI chat merchant (per-second subscriptions).');
+    console.log('\nSet GEMINI_API_KEY to also run the Gemini AI chat merchant (per-second subscriptions).');
   }
   console.log(`\nDesktop client RPC: ${desktop.ready.rpc?.url} (token in ${tokenFile}). Its data folder password is "${PASSWORD}".`);
   console.log('Press Ctrl+C to stop.');

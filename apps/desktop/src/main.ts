@@ -27,7 +27,7 @@ import { USAGE, loadConfig } from './config/index.ts';
 import type { Config } from './config/index.ts';
 import { createHyperRpcService, envioHyperRpcUrl } from './modules/hyperrpc/index.ts';
 import type { HyperRpcService } from './modules/hyperrpc/index.ts';
-import { createMerchantCardService, createQwenService } from './modules/merchant/index.ts';
+import { createGeminiService, createMerchantCardService } from './modules/merchant/index.ts';
 import { NodeService } from './modules/node/index.ts';
 import { ShellService, formatError } from './modules/shell/index.ts';
 import { FileStore } from './shared/integrations/file.store.ts';
@@ -60,7 +60,7 @@ async function main(argv: readonly string[]): Promise<void> {
     rpcUrls: config.chainRpcs,
     rpcFallback: config.chainRpcFallback,
     maxFee: maxFeesOf(config, networks),
-    merchant: offer && { offer, service: createQwenService(config.merchant.apiKey ?? '') },
+    merchant: offer && { offer, service: createGeminiService(config.merchant.apiKey ?? '') },
   });
   if (config.command === 'init') return init(config, calyptra);
   return start(config, calyptra, logger, offer);

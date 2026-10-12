@@ -138,7 +138,7 @@ const card: MerchantCard = {
   v: 1,
   name: 'Calyptra AI',
   invite: encodeInvite({ v: 1, peerId: 'merchant-peer', addrs: ['/ip4/1.2.3.4/tcp/1/ws/p2p/relay/p2p-circuit/p2p/merchant-peer'], shieldedAddress: 'cal' }),
-  offer: OfferSchema.parse({ kind: 'ai-chat', title: 'Calyptra AI · powered by Qwen', token: 'stablecoin', ratePerSecond: RATE, minFunding: '1000000' }),
+  offer: OfferSchema.parse({ kind: 'ai-chat', title: 'Calyptra AI · powered by Gemini', token: 'stablecoin', ratePerSecond: RATE, minFunding: '1000000' }),
 };
 
 describe('SubscriptionService', () => {

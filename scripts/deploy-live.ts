@@ -1,6 +1,6 @@
 // Live deployment from the current commit (Stage 2, §11.10): the website on the CDN at https://calyptra.space
 // and the relay host relay.calyptra.space (desktop client as transaction relayer, libp2p relay, /hyperrpc
-// wallet-sync proxy and, with a DashScope key, the Qwen merchant) behind Caddy. Idempotent.
+// wallet-sync proxy and, with a Gemini key, the Gemini merchant) behind Caddy. Idempotent.
 //   npm run deploy:live [-- --project <cloud project id>]
 // Needs the product owner's domain, cloud project and credentials (§13.2); never run it without them.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -216,9 +216,9 @@ async function installRelay(project: string, wallet: RelayWallet): Promise<void>
   const secrets = [`CALYPTRA_PASSWORD=${wallet.password}`];
   if (process.env.CALYPTRA_ENVIO_TOKEN) secrets.push(`CALYPTRA_ENVIO_TOKEN=${process.env.CALYPTRA_ENVIO_TOKEN}`);
   else console.log('⚠ CALYPTRA_ENVIO_TOKEN is not set: the relay host will not serve /hyperrpc (wallets fall back to the public RPC)');
-  const merchant = Boolean(process.env.DASHSCOPE_API_KEY);
-  if (merchant) secrets.push(`DASHSCOPE_API_KEY=${process.env.DASHSCOPE_API_KEY}`);
-  else console.log('⚠ DASHSCOPE_API_KEY is not set: the relay host will not run the Qwen merchant');
+  const merchant = Boolean(process.env.GEMINI_API_KEY);
+  if (merchant) secrets.push(`GEMINI_API_KEY=${process.env.GEMINI_API_KEY}`);
+  else console.log('⚠ GEMINI_API_KEY is not set: the relay host will not run the Gemini merchant');
   await writeFile(join(upload, 'node.env'), `${secrets.join('\n')}\n`, { mode: 0o600 });
   await copyFile(join(REPO, 'scripts', 'live', 'install-relay.sh'), join(upload, 'install-relay.sh'));
   const files = ['release.tgz', 'node-data.tgz', 'node.env', 'install-relay.sh'];
@@ -295,7 +295,7 @@ async function main(): Promise<void> {
   await installRelay(project, wallet);
   await deployWebsite(token);
   await waitForRelay(wallet);
-  if (process.env.DASHSCOPE_API_KEY) {
+  if (process.env.GEMINI_API_KEY) {
     console.log("merchant card: on the relay host's ready line (sudo journalctl -u calyptra-node | grep 'calyptra ready'); list it in the network's merchants");
   }
   console.log(`\nLive: https://${DOMAIN} · relayer ${RELAYER_URL} · relay ${relayAddress(wallet.relayPeerId)}`);

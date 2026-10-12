@@ -19,7 +19,7 @@ export interface MerchantDeps {
   p2p: Pick<P2PService, 'handleSessions'>;
   channels: Pick<ChannelService, 'get'>;
   chain: { network: { stablecoin: string } };
-  /** The service sold by the second (e.g. the Qwen chat, or EchoServicePort in tests). */
+  /** The service sold by the second (e.g. the Gemini chat, or EchoServicePort in tests). */
   service: ServicePort;
   offer: Offer;
 }

@@ -1,7 +1,7 @@
 // The real desktop client as child processes (all-ref §10.7.8): init and the encrypted data folder,
 // the local RPC and its token, the relayer and libp2p relay roles serving a website-style framework
 // user, the relayer account's limits, and export/import in both directions (INT-D1..D6). Then the
-// startup refusals of merchant mode (§11.5): it always sells the Qwen chat, so only its error paths
+// startup refusals of merchant mode (§11.5): it always sells the Gemini chat, so only its error paths
 // run here; the paid service itself is covered with EchoServicePort in subscription.test.ts.
 // Tests run in order and share the data folder.
 import type { ChildProcess } from 'node:child_process';
@@ -235,28 +235,28 @@ describe('desktop client', () => {
 describe('desktop startup refusals', () => {
   /** Never sent anywhere: every run below exits before the merchant's service is ever called. */
   const PLACEHOLDER_KEY = 'placeholder-never-used';
-  const offer = { kind: 'ai-chat', title: 'Calyptra AI · powered by Qwen', token: 'stablecoin', ratePerSecond: '2000', minFunding: '1000000', graceSeconds: 3 };
+  const offer = { kind: 'ai-chat', title: 'Calyptra AI · powered by Gemini', token: 'stablecoin', ratePerSecond: '2000', minFunding: '1000000', graceSeconds: 3 };
   const startArgs = async (...extra: string[]): Promise<string[]> => [...base(), '--rpc-port', String(await freePort()), ...extra];
 
-  it('merchant mode needs an offer file and DASHSCOPE_API_KEY', async () => {
+  it('merchant mode needs an offer file and GEMINI_API_KEY', async () => {
     const offerFile = join(tmp, 'offer.json');
     await writeFile(offerFile, JSON.stringify(offer));
-    const noOffer = await runDesktop(await startArgs('--merchant'), { ...env, DASHSCOPE_API_KEY: '' });
+    const noOffer = await runDesktop(await startArgs('--merchant'), { ...env, GEMINI_API_KEY: '' });
     expect(noOffer.code).toBe(1);
     expect(noOffer.stderr).toContain('--merchant needs --merchant-offer <offer.json>');
-    const noKey = await runDesktop(await startArgs('--merchant', '--merchant-offer', offerFile), { ...env, DASHSCOPE_API_KEY: '' });
+    const noKey = await runDesktop(await startArgs('--merchant', '--merchant-offer', offerFile), { ...env, GEMINI_API_KEY: '' });
     expect(noKey.code).toBe(1);
-    expect(noKey.stderr).toContain('--merchant needs the DASHSCOPE_API_KEY environment variable');
+    expect(noKey.stderr).toContain('--merchant needs the GEMINI_API_KEY environment variable');
   });
 
   it('merchant mode refuses an invalid offer, and a node no subscriber could reach (no libp2p relay)', async () => {
     const badFile = join(tmp, 'bad-offer.json');
     await writeFile(badFile, JSON.stringify({ ...offer, token: 'native', ratePerSecond: '0' }));
-    const bad = await runDesktop(await startArgs('--merchant', '--merchant-offer', badFile), { ...env, DASHSCOPE_API_KEY: PLACEHOLDER_KEY });
+    const bad = await runDesktop(await startArgs('--merchant', '--merchant-offer', badFile), { ...env, GEMINI_API_KEY: PLACEHOLDER_KEY });
     expect(bad.code).toBe(1);
     expect(bad.stderr).toContain('error INVALID_INPUT');
     const offerFile = join(tmp, 'offer.json');
-    const unreachable = await runDesktop(await startArgs('--merchant', '--merchant-offer', offerFile), { ...env, DASHSCOPE_API_KEY: PLACEHOLDER_KEY });
+    const unreachable = await runDesktop(await startArgs('--merchant', '--merchant-offer', offerFile), { ...env, GEMINI_API_KEY: PLACEHOLDER_KEY });
     expect(unreachable.code).toBe(1);
     expect(unreachable.stderr).toContain('error NO_RELAY');
     expect(existsSync(tokenFile)).toBe(false);
