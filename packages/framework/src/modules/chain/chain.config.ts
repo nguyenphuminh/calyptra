@@ -31,14 +31,10 @@ export const NetworkConfigSchema = z.object({
 export type NetworkConfig = z.infer<typeof NetworkConfigSchema>;
 
 /**
- * The built-in network. The contracts are deployed (2026-10-12, `npm run deploy:network -- --network
- * monad-testnet`). Values that only exist once the relay host is up (§11.10, §13.2) are left out until
- * then, so the network runs without channels (no libp2p relay) and without a relayer. Then fill in:
- *   logRpcUrls:   ['https://relay.<DOMAIN>/hyperrpc'],
- *   relayers:     ['https://relay.<DOMAIN>'],
- *   libp2pRelays: ['/dns4/relay.<DOMAIN>/tcp/443/wss/p2p/<relay peer id>'],
- *   merchants:    [<merchant-card code of the demo merchant>] (§11.5),
- * where <DOMAIN> is the product owner's domain (deferred) and <relay peer id> the relay host's peer id.
+ * The built-in network: contracts deployed 2026-10-12 (`npm run deploy:network -- --network monad-testnet`),
+ * relay host relay.calyptra.space (`npm run deploy:live`). Still to add once their keys exist:
+ *   logRpcUrls:   ['https://relay.calyptra.space/hyperrpc'] (with the Envio token on the relay host, §11.3),
+ *   merchants:    [<merchant-card code of the demo merchant>] (§11.5).
  */
 export const BUILT_IN_NETWORKS: readonly NetworkConfig[] = [
   {
@@ -54,8 +50,8 @@ export const BUILT_IN_NETWORKS: readonly NetworkConfig[] = [
       disputes: '0xe33b1144efd35596a5cca72fc52941a442436145',
       deployBlock: 70436926n,
     },
-    relayers: [],
-    libp2pRelays: [],
+    relayers: ['https://relay.calyptra.space'],
+    libp2pRelays: ['/dns4/relay.calyptra.space/tcp/443/wss/p2p/12D3KooWBgwLiqUc7CPFsurgxx2AjFjZEYHNx1GjTSWPr4brvHok'],
     merchants: [],
   },
 ];

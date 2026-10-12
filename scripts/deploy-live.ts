@@ -1,5 +1,5 @@
-// Live deployment from the current commit (Stage 2, §11.10): the website on the CDN at https://<DOMAIN>
-// and the relay host relay.<DOMAIN> (desktop client as transaction relayer, libp2p relay, /hyperrpc
+// Live deployment from the current commit (Stage 2, §11.10): the website on the CDN at https://calyptra.space
+// and the relay host relay.calyptra.space (desktop client as transaction relayer, libp2p relay, /hyperrpc
 // wallet-sync proxy and, with a DashScope key, the Qwen merchant) behind Caddy. Idempotent.
 //   npm run deploy:live [-- --project <cloud project id>]
 // Needs the product owner's domain, cloud project and credentials (§13.2); never run it without them.
@@ -19,7 +19,7 @@ import { desktopRpc, freePort, runDesktop, startDesktop, stopDesktop } from './l
 import { sendValueSpaced } from './lib/value-sends.ts';
 
 /** The product owner's domain (§13.2): deferred, ask before deploying. */
-const DOMAIN = '<DOMAIN>';
+const DOMAIN = 'calyptra.space';
 const RELAY_HOST = `relay.${DOMAIN}`;
 const RELAYER_URL = `https://${RELAY_HOST}`;
 const NETWORK_ID = 'monad-testnet';
@@ -193,7 +193,7 @@ async function zoneOf(token: string): Promise<{ id: string; account: { id: strin
   return zone;
 }
 
-/** 7. A record relay.<DOMAIN> -> IP, DNS only (not proxied), before the proxy asks for its certificate. */
+/** 7. A record relay.calyptra.space -> IP, DNS only (not proxied), before the proxy asks for its certificate. */
 async function pointDns(token: string, ip: string): Promise<void> {
   const zone = await zoneOf(token);
   const records = await cdn<{ id: string; content: string }[]>(token, `/zones/${zone.id}/dns_records?type=A&name=${RELAY_HOST}`);
@@ -247,7 +247,9 @@ async function deployWebsite(token: string): Promise<void> {
   execFileSync('npx', ['wrangler', 'deploy'], {
     cwd: join(REPO, 'apps', 'web'),
     stdio: 'inherit',
-    env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: zone.account.id, CLOUDFLARE_API_TOKEN: token },
+    // wrangler deploys with its own login (`npx wrangler login`) unless the operator exports CLOUDFLARE_API_TOKEN;
+    // the DNS token is zone-scoped and may lack the Workers permissions.
+    env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: zone.account.id },
   });
 }
 

@@ -3,8 +3,8 @@
   "compatibility_date": "2026-10-01",
   "assets": { "directory": "./dist" },
   "routes": [
-    { "pattern": "<DOMAIN>", "custom_domain": true },
-    { "pattern": "www.<DOMAIN>", "custom_domain": true }
+    { "pattern": "calyptra.space", "custom_domain": true },
+    { "pattern": "www.calyptra.space", "custom_domain": true }
   ],
   "workers_dev": false
 }

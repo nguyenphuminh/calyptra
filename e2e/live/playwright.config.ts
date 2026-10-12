@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never', outputFolder: '../../playwright-report/live' }]],
   outputDir: '../../test-results/live',
   use: {
-    baseURL: process.env.CALYPTRA_LIVE_URL ?? 'https://<DOMAIN>',
+    baseURL: process.env.CALYPTRA_LIVE_URL ?? 'https://calyptra.space',
     // A click on something covered (e.g. behind a dialog) fails after a minute instead of waiting out the test.
     actionTimeout: 60_000,
     navigationTimeout: 60_000,
