@@ -134,6 +134,7 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: 
   }
 
   let relayNode: Libp2p | undefined;
+  let hyperRpc: HyperRpcService | undefined;
   let rpc: { url: string; tokenFile: string } | null = null;
   let ready = false;
   let ticking = false;
@@ -146,6 +147,7 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: 
       ready = false;
       clearInterval(interval);
       await Promise.all(servers.map((s) => new Promise<void>((resolve) => s.close(() => resolve()))));
+      await hyperRpc?.stop();
       await relayNode?.stop();
       await calyptra.lock(); // stops the session, locks the wallet, forgets derived keys
       if (rpc) await rm(rpc.tokenFile, { force: true });
@@ -184,7 +186,8 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: 
       rpc = { url, tokenFile: config.rpc.tokenFile };
     }
     if (relayer) {
-      const hyperRpc = hyperRpcOf(config, network, logger);
+      hyperRpc = hyperRpcOf(config, network, logger);
+      hyperRpc?.start(); // fills the event cache in the background; /hyperrpc answers "warming up" until then
       servers.push(await listen(createRelayerApp({ relayer, logger, hyperRpc }), config.relayer.port, config.relayer.host));
     }
 
@@ -228,10 +231,7 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: 
 function hyperRpcOf(config: Config, network: NetworkConfig, logger: Logger): HyperRpcService | undefined {
   if (!config.envioToken || !network.contracts) return undefined;
   logger.info({ module: 'hyperrpc' }, 'wallet-sync proxy enabled at POST /hyperrpc');
-  return createHyperRpcService({
-    upstreamUrl: envioHyperRpcUrl(network.chainId, config.envioToken),
-    contracts: [network.contracts.pool, network.contracts.disputes],
-  });
+  return createHyperRpcService({ network, upstreamUrl: envioHyperRpcUrl(network.chainId, config.envioToken), logger });
 }
 
 main(process.argv.slice(2)).catch((err: unknown) => {

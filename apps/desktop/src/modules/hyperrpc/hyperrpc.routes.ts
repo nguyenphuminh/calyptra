@@ -5,6 +5,6 @@ import type { HyperRpcService } from './hyperrpc.service.ts';
 export function hyperRpcRoutes(service: HyperRpcService): Router {
   const controller = new HyperRpcController(service);
   const router = Router();
-  router.post('/hyperrpc', controller.forward);
+  router.post('/hyperrpc', controller.answer);
   return router;
 }

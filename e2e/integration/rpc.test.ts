@@ -1,15 +1,15 @@
 // RPC endpoints (all-ref §10.7.7): failover, range-limited and lagging endpoints, chain checks, and a
 // transaction never re-sent elsewhere (INT-R1..R6), through local JSON-RPC proxies in front of the dev
 // chain. Then wallet sync through the network's history endpoints (§11.3, `logRpcUrls`): the desktop
-// client's real POST /hyperrpc route, served in-process with the dev chain standing in for Envio
-// HyperRPC, and the order endpoints are tried in (user endpoints, then logRpcUrls, then the network's
-// RPC endpoints; only the user's when the fallback is off).
+// client's real POST /hyperrpc route, served in-process from its event cache (filled from the dev chain
+// standing in for Envio HyperRPC), and the order endpoints are tried in (user endpoints, then
+// logRpcUrls, then the network's RPC endpoints; only the user's when the fallback is off).
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { parseEther } from 'viem';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createRelayerApp } from '../../apps/desktop/src/app.ts';
-import { createHyperRpcService } from '../../apps/desktop/src/modules/hyperrpc/index.ts';
+import { createHyperRpcService, type HyperRpcService } from '../../apps/desktop/src/modules/hyperrpc/index.ts';
 import { createLogger } from '../../apps/desktop/src/shared/logger.ts';
 import type { Calyptra } from '../../packages/framework/src/calyptra.ts';
 import { ChainAdapter, type ChainAdapterOptions, type NetworkConfig } from '../../packages/framework/src/modules/chain/index.ts';
@@ -119,11 +119,14 @@ describe('wallet sync through the network’s history endpoints (§11.3)', () =>
   /** The network's own RPC endpoint and the user's own endpoint (recording proxies of the dev chain). */
   let networkRpc: RpcProxy;
   let userRpc: RpcProxy;
-  /** What the /hyperrpc route forwards upstream (the dev chain standing in for Envio HyperRPC). */
+  /** What the route's event cache asks upstream (the dev chain standing in for Envio HyperRPC). */
   let upstream: RpcProxy;
   /** Requests that reached the /hyperrpc route at all. */
   let routeHits = 0;
+  /** While set, the route answers 503 as a whole, so wallets fail over. */
+  let routeDown = false;
   let route: Server;
+  let hyperRpc: HyperRpcService;
   let logNetwork: NetworkConfig;
   let phrase: string;
   const deposits = 2n * CENT;
@@ -138,19 +141,25 @@ describe('wallet sync through the network’s history endpoints (§11.3)', () =>
       p.mode = 'forward';
     }
     routeHits = 0;
+    routeDown = false;
+  };
+  /** The last block the route's cache covers (null while it warms up). */
+  const cachedTo = (): bigint | null => {
+    const answer = hyperRpc.answer({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber' });
+    return 'result' in answer ? BigInt(answer.result as string) : null;
   };
 
   beforeAll(async () => {
     [networkRpc, userRpc, upstream] = [await proxy(), await proxy(), await proxy()];
     const relayer = await newRelayer(network, direct, { native: 10n ** 14n, stable: 10_000n });
-    const app = createRelayerApp({
-      relayer: relayer.service,
-      logger: createLogger('silent'),
-      hyperRpc: createHyperRpcService({ upstreamUrl: upstream.url, contracts: [d.pool, d.disputes] }),
-    });
+    // The relay host reads the head on the network's own endpoint (the dev chain), not through networkRpc.
+    hyperRpc = createHyperRpcService({ network, upstreamUrl: upstream.url, logger: createLogger('silent'), upstreamSpacingMs: 0, pollIntervalMs: 100 });
+    hyperRpc.start();
+    const app = createRelayerApp({ relayer: relayer.service, logger: createLogger('silent'), hyperRpc });
     route = createServer((req, res) => {
       routeHits++;
-      app(req, res);
+      if (routeDown) res.writeHead(503).end('down');
+      else app(req, res);
     });
     await new Promise<void>((resolve) => route.listen(0, '127.0.0.1', resolve));
     const hyperRpcUrl = `http://127.0.0.1:${(route.address() as AddressInfo).port}/hyperrpc`;
@@ -161,27 +170,31 @@ describe('wallet sync through the network’s history endpoints (§11.3)', () =>
     await first.pool.deposit(NATIVE, CENT);
     await first.stop();
     await mineBlocks(250); // the history now spans several 100-block RPC windows
+    const head = await direct.latestBlock();
+    await until(() => (cachedTo() ?? 0n) >= head - 3n, 30_000, 'the event cache to reach the head');
   });
 
   afterAll(async () => {
+    await hyperRpc?.stop();
     await new Promise<void>((resolve) => route?.close(() => resolve()));
   });
 
-  it('scans the whole history through the history endpoint first, in one large window; nothing else goes there', async () => {
+  it('scans the whole history through the history endpoint first, answered from its cache; nothing else goes there', async () => {
     reset();
     const device = await newDevice();
     expect(device.eventRpcUrls()).toEqual([...(logNetwork.logRpcUrls ?? []), networkRpc.url]);
     await device.pool.sync();
     expect(shielded(device.pool)).toBe(deposits);
-    expect(getLogs(upstream)).toBe(2); // NewCommitment and NewNullifier, one window each
-    expect(new Set(upstream.methods)).toEqual(new Set(['eth_chainId', 'eth_blockNumber', 'eth_getLogs']));
+    expect(routeHits).toBeGreaterThan(0);
     expect(networkRpc.methods).toEqual([]);
+    // The cache asks upstream for nothing but eth_getLogs, and only as the chain moves on, never per wallet.
+    expect(upstream.methods.every((m) => m === 'eth_getLogs')).toBe(true);
     await device.stop();
   });
 
   it('falls back to the network’s RPC endpoints, in windows of at most 100 blocks', async () => {
     reset();
-    upstream.mode = 'down';
+    routeDown = true;
     const device = await newDevice();
     await device.pool.sync();
     expect(shielded(device.pool)).toBe(deposits);
@@ -206,13 +219,13 @@ describe('wallet sync through the network’s history endpoints (§11.3)', () =>
     await ownDown.pool.sync();
     expect(shielded(ownDown.pool)).toBe(deposits);
     expect(userRpc.methods.length).toBeGreaterThan(0);
-    expect(getLogs(upstream)).toBe(2);
+    expect(routeHits).toBeGreaterThan(0);
     expect(networkRpc.methods).toEqual([]);
     await ownDown.stop();
 
     reset();
     userRpc.mode = 'down';
-    upstream.mode = 'down';
+    routeDown = true;
     const bothDown = await newDevice({ rpcUrls: [userRpc.url] });
     await bothDown.pool.sync();
     expect(shielded(bothDown.pool)).toBe(deposits);
@@ -230,7 +243,7 @@ describe('wallet sync through the network’s history endpoints (§11.3)', () =>
       code: 'RPC_UNAVAILABLE', message: `No RPC endpoint of ${logNetwork.name} is answering`,
     });
     expect(userRpc.methods.length).toBeGreaterThan(0);
-    expect([routeHits, upstream.methods.length, networkRpc.methods.length]).toEqual([0, 0, 0]);
+    expect([routeHits, networkRpc.methods.length]).toEqual([0, 0]);
     await device.stop();
   });
 });
