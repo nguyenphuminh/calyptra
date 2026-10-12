@@ -176,6 +176,20 @@ describe('ChainAdapter event scans (§11.3)', () => {
     expect(logs(node3)).toBe(6);
   });
 
+  it('uses the history endpoints only to catch up a long range; short catch-ups go to the RPC endpoints', async () => {
+    const history = await rpc({ head: 300_000 });
+    const node = await rpc({ head: 300_000 });
+    const chain = new ChainAdapter(network(node.url, { logRpcUrls: [history.url] }));
+    const logs = (r: Rpc): number => r.methods.filter((m) => m === 'eth_getLogs').length;
+    const first = await chain.poolEvents(1n);                       // a new device: the whole history
+    expect([logs(history), logs(node)]).toEqual([6, 0]);            // 3 large windows x 2 events
+    await chain.poolEvents(first.toBlock - 150n);                   // the next tick: a short range
+    expect(logs(history)).toBe(6);
+    expect(logs(node)).toBe(4);                                     // 2 RPC windows x 2 events
+    await chain.poolEvents(first.toBlock - 5_000n);                 // back after a while: history again
+    expect(logs(history)).toBe(8);
+  });
+
   it('never contacts the history endpoints when they are not listed (network fallback off)', async () => {
     const own = await rpc({ head: 50 });
     const history = await rpc({ head: 50 });

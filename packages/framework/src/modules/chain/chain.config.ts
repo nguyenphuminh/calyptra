@@ -32,9 +32,8 @@ export type NetworkConfig = z.infer<typeof NetworkConfigSchema>;
 
 /**
  * The built-in network: contracts deployed 2026-10-12 (`npm run deploy:network -- --network monad-testnet`),
- * relay host relay.calyptra.space (`npm run deploy:live`). Still to add once their keys exist:
- *   logRpcUrls:   ['https://relay.calyptra.space/hyperrpc'] (with the Envio token on the relay host, §11.3),
- *   merchants:    [<merchant-card code of the demo merchant>] (§11.5).
+ * relay host relay.calyptra.space with its Envio HyperRPC proxy (`npm run deploy:live`). Still to add once
+ * the merchant runs: merchants: [<merchant-card code of the demo merchant>] (§11.5).
  */
 export const BUILT_IN_NETWORKS: readonly NetworkConfig[] = [
   {
@@ -43,6 +42,7 @@ export const BUILT_IN_NETWORKS: readonly NetworkConfig[] = [
     chainId: 10143,
     rpcUrl: 'https://testnet-rpc.monad.xyz',                    // official, about 50 requests/s
     backupRpcUrls: ['https://rpc.ankr.com/monad_testnet'],
+    logRpcUrls: ['https://relay.calyptra.space/hyperrpc'],     // Envio HyperRPC behind the relay host (§11.3)
     explorerUrl: 'https://testnet.monadvision.com',
     stablecoin: '0xa9012a055bd4e0edff8ce09f960291c09d5322dc', // AUSD, 6 decimals (checked on chain 2026-10-11)
     contracts: {

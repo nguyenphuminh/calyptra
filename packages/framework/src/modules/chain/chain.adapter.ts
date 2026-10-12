@@ -18,6 +18,9 @@ const MIN_LOG_WINDOW = 100n;
 /** Event scans on the network's history endpoints (`logRpcUrls`, Envio HyperRPC) start much larger and halve on refusal. */
 const LOG_RPC_WINDOW = 100_000n;
 const MIN_LOG_RPC_WINDOW = 500n;
+/** A catch-up shorter than this (about 10 minutes of Monad blocks) skips the history endpoints: they serve the
+ *  long scans of a new or long-offline device, and Envio's free tier allows only a few requests a minute. */
+const HISTORY_MIN_BLOCKS = 2_000n;
 /** An endpoint that failed is passed over this long before the more preferred ones are tried again. */
 const RETRY_AFTER_MS = 60_000;
 /** A native deposit below Monad's reserve waits, polling this often and at most this long, until the
@@ -86,6 +89,10 @@ export class ChainAdapter {
   private readonly endpoints: Endpoint[];
   /** Event scans (an endpoint listed in both is the same object: one health record per URL). */
   private readonly eventEndpoints: Endpoint[];
+  /** The network's history endpoints (`logRpcUrls`) among the event endpoints. */
+  private readonly historyEndpoints: ReadonlySet<Endpoint>;
+  /** The latest block an event scan reached; null before the first scan. */
+  private lastHead: bigint | null = null;
   private readonly disputeMirror = { scannedTo: -1n, disputes: new Map<bigint, Dispute>(), finalized: new Set<bigint>() };
   private mirroring: Promise<void> | null = null;
   /** Per sending address (lowercase), the block of the receipt of the last transaction it sent here. */
@@ -119,6 +126,7 @@ export class ChainAdapter {
     const eventUrls = [...new Set(options.eventRpcUrls?.length ? options.eventRpcUrls : [...history, ...urls])];
     this.endpoints = urls.map(endpointOf);
     this.eventEndpoints = eventUrls.map(endpointOf);
+    this.historyEndpoints = new Set(this.eventEndpoints.filter((e) => history.has(e.url)));
   }
 
   /** The URL a read would use now. */
@@ -176,9 +184,13 @@ export class ChainAdapter {
     throw new AppError(503, 'RPC_UNAVAILABLE', `No RPC endpoint of ${this.network.name} is answering`);
   }
 
-  /** Event scans: on the event endpoints, in their order (one endpoint from start to finish). */
-  private readLogs<T>(run: (endpoint: Endpoint) => Promise<T>): Promise<T> {
-    return this.read(run, this.order(this.eventEndpoints));
+  /** Event scans from `from`: on the event endpoints, in their order (one endpoint from start to finish).
+   *  A short catch-up skips the history endpoints unless nothing else is listed. */
+  private readLogs<T>(from: bigint, run: (endpoint: Endpoint) => Promise<T>): Promise<T> {
+    const ordered = this.order(this.eventEndpoints);
+    const short = this.lastHead !== null && this.lastHead - from < HISTORY_MIN_BLOCKS;
+    const endpoints = short ? ordered.filter((e) => !this.historyEndpoints.has(e)) : ordered;
+    return this.read(run, endpoints.length > 0 ? endpoints : ordered);
   }
 
   /** The first endpoint that passes the chain-id check; a whole transaction then stays on it. */
@@ -207,8 +219,9 @@ export class ChainAdapter {
   /** The pool's new notes and spent nullifiers from `fromBlock` to the latest block, all from one endpoint. */
   async poolEvents(fromBlock: bigint): Promise<{ toBlock: bigint; commitments: CommitmentEvent[]; nullifiers: bigint[] }> {
     const { pool } = this.contracts();
-    return this.readLogs(async (endpoint) => {
+    return this.readLogs(fromBlock, async (endpoint) => {
       const toBlock = await endpoint.client.getBlockNumber({ cacheTime: 0 });
+      this.lastHead = toBlock;
       if (fromBlock > toBlock) return { toBlock, commitments: [], nullifiers: [] };
       const [created, spent] = await Promise.all([
         this.windows(endpoint, fromBlock, toBlock, (client, from, to) =>
@@ -235,8 +248,9 @@ export class ChainAdapter {
     const { disputes, deployBlock } = this.contracts();
     const mirror = this.disputeMirror;
     const from = mirror.scannedTo < 0n ? deployBlock : mirror.scannedTo + 1n;
-    const scan = await this.readLogs(async (endpoint) => {
+    const scan = await this.readLogs(from, async (endpoint) => {
       const to = await endpoint.client.getBlockNumber({ cacheTime: 0 });
+      this.lastHead = to;
       if (from > to) return null;
       const [submitted, finalized] = await Promise.all([
         this.windows(endpoint, from, to, (client, start, end) =>
