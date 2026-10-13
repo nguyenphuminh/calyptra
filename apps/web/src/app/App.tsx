@@ -64,12 +64,12 @@ export function App() {
   const prompts = useMemo(() => new Prompts(), []);
   const pendingOpens = useMemo(() => new PendingOpens(), []);
   const prover = useMemo(() => new WorkerProver(artifactsBase()), []);
-  const calyptra = useMemo(() => createCalyptra(prompts, prover), [prompts, prover]);
-  const [phase, setPhase] = useState<Phase>('loading');
   const [version, setVersion] = useState(0);
+  const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  const calyptra = useMemo(() => createCalyptra(prompts, prover, refresh), [prompts, prover, refresh]);
+  const [phase, setPhase] = useState<Phase>('loading');
   const [problems, setProblems] = useState<string[]>([]);
   const [asked, setAsked] = useState(() => prompts.current());
-  const refresh = useCallback(() => setVersion((v) => v + 1), []);
   const route = routeOf(useHashPath());
   const proving = useSyncExternalStore(useCallback((listener: () => void) => prover.subscribe(listener), [prover]), () => prover.busy());
 

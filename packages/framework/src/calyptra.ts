@@ -41,6 +41,8 @@ export interface CalyptraOptions {
   approveOpen?: ChannelDeps['approveOpen'];
   /** After joining a proposed channel. */
   onJoined?: ChannelDeps['onJoined'];
+  /** After the other side changed a channel (a payment received, an opening confirmed). */
+  onChanged?: ChannelDeps['onChanged'];
   /** Asked before outgoing channel payments, except those a subscription's allowance covers (§11.5);
    *  without it, outgoing channel payments are signed automatically. */
   confirmPayment?: ChannelDeps['confirmPayment'];
@@ -150,7 +152,7 @@ export class Calyptra {
       const channels: ChannelService = new ChannelService({
         wallet, keys, chain, pool, prover, p2p, repository: channelStore,
         relayer: () => this.relayer(),
-        approveOpen: options.approveOpen, onJoined: options.onJoined,
+        approveOpen: options.approveOpen, onJoined: options.onJoined, onChanged: options.onChanged,
         confirmPayment: (payment): Promise<boolean> => subscriptions.confirmPayment(payment),
         window: options.disputeWindow,
       });

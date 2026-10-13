@@ -82,6 +82,9 @@ export interface ChannelDeps {
   approveOpen?: (request: OpenRequest) => Promise<boolean>;
   /** Called once this side has joined a channel the other side proposed and saved it, before funding. */
   onJoined?: (channelId: string) => void;
+  /** Called after a message from the other side was handled and the channel saved (a payment received, an
+   *  opening confirmed), so a host can show it at once. */
+  onChanged?: (channelId: string) => void;
   /** Asked before every outgoing payment; without it payments are signed automatically. */
   confirmPayment?: (payment: { channelId: string; token: bigint; amount: bigint }) => Promise<boolean>;
   /** Dispute window of new channels in seconds (default: the longest the contract accepts, 7 days). */
@@ -359,6 +362,7 @@ export class ChannelService {
         return await this.onPropose(r, m, account);
       } finally {
         await this.deps.repository.save(r, account); // saved even when the handler refused
+        this.deps.onChanged?.(m.channelId);
       }
     });
   }

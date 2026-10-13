@@ -184,7 +184,7 @@ function world() {
 }
 type World = ReturnType<typeof world>;
 
-async function node(w: World, name: string, deposit: bigint, options: Partial<Pick<ChannelDeps, 'approveOpen' | 'onJoined' | 'confirmPayment'>> = {}) {
+async function node(w: World, name: string, deposit: bigint, options: Partial<Pick<ChannelDeps, 'approveOpen' | 'onJoined' | 'onChanged' | 'confirmPayment'>> = {}) {
   const keys = await derivePoolKeys(privateKeyToAccount(generatePrivateKey()));
   let count = 0;
   const keyRing = { poolKeys: async () => keys, newChannel: async () => ({ index: count, secrets: channelSecrets(keys, count++) }) };
@@ -222,8 +222,13 @@ async function withNonceStep<T>(step: number, run: () => Promise<T>): Promise<T>
 async function openLive(amount = 100n, peerAmount = 50n, window = 600n) {
   const w = world();
   const joined: [string, string][] = [];
+  const changed: [string, bigint][] = []; // Bob's balance in the saved channel each time Alice changes it
   const alice = await node(w, 'alice', 1_000n);
-  const bob: Node = await node(w, 'bob', 1_000n, { approveOpen: async () => true, onJoined: (id) => joined.push([id, bob.channels.get(id).status]) });
+  const bob: Node = await node(w, 'bob', 1_000n, {
+    approveOpen: async () => true,
+    onJoined: (id) => joined.push([id, bob.channels.get(id).status]),
+    onChanged: (id) => changed.push([id, bob.channels.get(id).latest.state.balB]),
+  });
   let accepted: unknown = null;
   const opened = await alice.channels.open(bob.invite, {
     token: 0n, amount, peerAmount, window, relayer: alice.relayer,
@@ -233,7 +238,7 @@ async function openLive(amount = 100n, peerAmount = 50n, window = 600n) {
   });
   expect(accepted).toEqual({ id: opened.id, status: 'opening', balance: 1_000n });
   expect(joined).toEqual([[opened.id, 'opening']]);
-  return { w, alice, bob, id: opened.id, opened };
+  return { w, alice, bob, id: opened.id, opened, changed };
 }
 
 async function live() {
@@ -272,6 +277,13 @@ describe('ChannelService between two nodes', () => {
     expect(sameLatest(t)).toMatchObject({ balA: 81n, balB: 59n });
     expect(t.w.ledger.commitments.size).toBe(before);
     await expect(t.alice.channels.pay(t.id, 1_000n)).rejects.toMatchObject({ code: 'INSUFFICIENT_FUNDS', message: 'Not enough balance in this channel' });
+  });
+
+  it('tells the receiving host about a payment once it is saved, without waiting for a tick', async () => {
+    const t = await live();
+    t.changed.length = 0;
+    await t.alice.channels.pay(t.id, 10n);
+    expect(t.changed).toEqual([[t.id, 60n]]);
   });
 
   it('lets both simultaneous payments through', async () => {
