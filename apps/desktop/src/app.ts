@@ -27,7 +27,7 @@ export function createRpcApp(options: { node: NodeService; token: string; logger
 
 /**
  * The public transaction-relayer API, open to anyone. On the relay host it also serves the wallet-sync
- * proxy POST /hyperrpc (§11.3), mounted before the request log so its traffic leaves no log line.
+ * proxy POST /hyperrpc, mounted before the request log so its traffic leaves no log line.
  */
 export function createRelayerApp(options: { relayer: RelayerService; logger: Logger; hyperRpc?: HyperRpcService }): Express {
   const app = express();

@@ -1,7 +1,7 @@
-// Passkey accounts with Mera (§11.4). A passkey's WebAuthn PRF output (32 secret bytes) becomes the
+// Passkey accounts with Mera. A passkey's WebAuthn PRF output (32 secret bytes) becomes the
 // wallet's recovery phrase and the key of its encrypted vault, so there is no password to type.
 //
-// Mera lets the caller choose the PRF salt of each evaluation (§13.1 V1, checked), so each key namespace
+// Mera lets the caller choose the PRF salt of each evaluation, so each key namespace
 // gets its own evaluation: one salt for the phrase's entropy, another for the vault key. A phrase alone
 // therefore never opens a stored vault, and the vault key alone never yields the phrase.
 import { createPasskeyWithPrfOutput, getPasskeyPrfOutput, isMeraError, type PasskeyCredentialMetadata } from '@category-labs/mera';
@@ -87,7 +87,7 @@ export async function passkeyPhrase(): Promise<string> {
   return entropyToMnemonic(prfOutput, wordlist);
 }
 
-/** Asks the user to confirm with this browser's passkey (Face ID, Touch ID…), e.g. once per subscription (§11.5). */
+/** Asks the user to confirm with this browser's passkey (Face ID, Touch ID…), e.g. once per subscription. */
 export async function confirmWithPasskey(): Promise<void> {
   await passkeyUnlockKey();
 }

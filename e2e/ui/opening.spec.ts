@@ -1,6 +1,6 @@
-// Starting a tab (all-ref §10.7.3: UI-C2, UI-C3 with its dispute start from §10.7.6, UI-C5, UI-C7):
+// Starting a tab (UI-C2, UI-C3 with its dispute start, UI-C5, UI-C7):
 // approvals, declines, unanswered requests, a funding that fails, cancelling, and the balance check
-// before the other side hears of anything. §11.6 wording: a channel is a "tab".
+// before the other side hears of anything. In the app's wording, a channel is a "tab".
 import type { Page } from '@playwright/test';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import {
@@ -135,7 +135,7 @@ test('UI-C3: a request is answered from the tab list: declined, then accepted; t
     await expect(bobTab.getByTestId('channel-mine')).toHaveText('0.02 MON');
     await expect(bobTab.getByRole('heading', { level: 2 })).toContainText('Alice');
 
-    // UI-C3 (end), §10.7.6: settling without the other side starts a dispute; the window is 7 days.
+    // UI-C3 (end): settling without the other side starts a dispute; the window is 7 days.
     await bobTab.getByRole('button', { name: 'Settle without the other side' }).click();
     const dispute = popup(bob, 'Settle without the other side');
     await expect(dispute).toContainText('7-day window');

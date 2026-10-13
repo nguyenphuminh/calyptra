@@ -1,4 +1,4 @@
-// The user's own RPC endpoints (all-ref §10.7.7: UI-W9), in Settings › Advanced: checked before they are
+// The user's own RPC endpoints (UI-W9), in Settings › Advanced: checked before they are
 // kept, tried first, and with the network's own switched off nobody else is asked.
 import { createServer, type IncomingMessage } from 'node:http';
 import type { AddressInfo } from 'node:net';

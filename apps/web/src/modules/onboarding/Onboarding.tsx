@@ -4,12 +4,12 @@ import { ChannelsIcon, CloseIcon, KeyIcon, PasskeyIcon, ShieldIcon } from '../..
 import { createPasskeySecrets, isPasskeyCancelled, passkeyErrorText, passkeysSupported, restorePasskeySecrets } from '../../shared/passkey.ts';
 import { Button, Card, ErrorNote, Field, Glows, Hero, Notice, useAction } from '../../shared/ui.tsx';
 
-/** The product's one-liner (§11.1), on the welcome screen and under the brand name in the sidebar. */
+/** The product's one-liner, on the welcome screen and under the brand name in the sidebar. */
 export const TAGLINE = 'Private dollars, paid by the second';
 
 const PHRASE_NOTICE = 'Calyptra only ever asks for your recovery phrase when you import a wallet. Never type it anywhere else.';
 
-/** The statement every form that imports, restores or resets a wallet shows; it cannot be closed there (F14). */
+/** The statement every form that imports, restores or resets a wallet shows; it cannot be closed there. */
 export function PhraseNotice() {
   return <Notice tone="warn">{PHRASE_NOTICE}</Notice>;
 }
@@ -84,7 +84,7 @@ export function PasswordFields({ onSubmit, busy, label }: { onSubmit: (password:
 
 type Mode = 'choose' | 'passkey' | 'phrase' | 'create' | 'import' | 'restore';
 
-/** First visit: a passkey by default (§11.4), or a recovery phrase, a private key or an export file. */
+/** First visit: a passkey by default, or a recovery phrase, a private key or an export file. */
 export function Onboarding({ calyptra, onReady }: { calyptra: Calyptra; onReady: () => Promise<void> }) {
   const [mode, setMode] = useState<Mode>('choose');
   const back = () => setMode('choose');

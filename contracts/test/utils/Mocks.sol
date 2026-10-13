@@ -14,7 +14,7 @@ contract MockVerifier {
     }
 }
 
-/// Pool stand-in for the Disputes tests (all-ref §4.10.2): `isKnownRoot` answers the value set before
+/// Pool stand-in for the Disputes tests: `isKnownRoot` answers the value set before
 /// each submission; `settle` succeeds unless told to revert.
 contract MockPool {
     bool internal known = true;

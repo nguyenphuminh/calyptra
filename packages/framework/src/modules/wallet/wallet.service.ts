@@ -73,7 +73,7 @@ async function vaultKeyFor(secret: VaultSecret, kdf: KdfParams): Promise<VaultKe
 /**
  * The built-in wallet: recovery phrase or imported keys, accounts, the selected network, and the
  * encrypted vault that holds everything (including other modules' sections). The vault opens with a
- * password, or with the raw 32-byte key a passkey yields (§11.4: `passkeyVaultKey(prfOutput)`).
+ * password, or with the raw 32-byte key a passkey yields (`passkeyVaultKey(prfOutput)`).
  */
 export class WalletService {
   private readonly repository: WalletRepository;

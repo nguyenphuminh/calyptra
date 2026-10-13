@@ -1,6 +1,6 @@
-// UI tier global setup (all-ref §10.4.1), in this order: the dev chain and one fresh short-window
+// UI tier global setup, in this order: the dev chain and one fresh short-window
 // deployment; the real desktop client as transaction relayer and libp2p relay; the echo merchant
-// (§11.5) as a framework node in this process; a production build of the website that knows the dev
+// as a framework node in this process; a production build of the website that knows the dev
 // networks, served by `vite preview` on 127.0.0.1:5199.
 import './port.ts';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -19,7 +19,7 @@ import { keepTicking, merchantCardOf, startPeer } from './peer.ts';
 const UI_PORT = 5199;
 const DESKTOP_PASSWORD = 'password123';
 
-/** The echo merchant's offer: the §11.5 placeholder price ($0.002 per second, at least $1). */
+/** The echo merchant's offer: the demo price ($0.002 per second, at least $1). */
 const ECHO_OFFER = OfferSchema.parse({
   kind: 'ai-chat', title: 'Echo chat', token: 'stablecoin', ratePerSecond: '2000', minFunding: '1000000', graceSeconds: 3,
 });

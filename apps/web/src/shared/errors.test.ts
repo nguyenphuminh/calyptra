@@ -23,7 +23,7 @@ function frameworkCodes(): Set<string> {
   return codes;
 }
 
-/** Words the website's error copy never uses (§11.6; the RPC check keeps its own words in Advanced). */
+/** Words the website's error copy never uses (the RPC check keeps its own words in Advanced). */
 const JARGON = /\b(shielded|relayer|libp2p|channels?|nullifiers?|commitments?|proofs?|notes?|pool|contributions?|on-chain|transactions?|tokens?)\b/i;
 
 describe('friendlyError', () => {

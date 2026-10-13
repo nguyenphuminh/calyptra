@@ -1,7 +1,7 @@
-// Live tests on Monad testnet (all-ref §10.5, §10.7 LIVE rows, §11.10 Stage 2): the deployed website with
-// the live relayer and libp2p relay. Stage 2 only: run after the deployment, with CALYPTRA_LIVE_URL and the
+// Live tests on Monad testnet: the deployed website with the live relayer and libp2p relay.
+// Run after the deployment, with CALYPTRA_LIVE_URL and the
 // funder key in ~/.calyptra-secrets/funder.key. It never starts a dispute (the live window is 3-7 days).
-// Money moves in dollars (AUSD, the main currency, §11.2/§11.6); MON only pays the accounts' network fees.
+// Money moves in dollars (AUSD, the main currency); MON only pays the accounts' network fees.
 // Every expected amount is computed from the relayer's live quote.
 import { statSync } from 'node:fs';
 import type { Browser, Page } from '@playwright/test';

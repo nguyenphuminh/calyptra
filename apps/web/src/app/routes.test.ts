@@ -14,7 +14,7 @@ describe('routeOf', () => {
     for (const path of ['/', '/channels', '/nowhere']) expect(routeOf(path)).toEqual({ section: 'channels', view: { kind: 'none' } });
   });
 
-  it('maps the services routes, merchant links and payment links (§11.5, §11.7)', () => {
+  it('maps the services routes, merchant links and payment links', () => {
     expect(routeOf('/services')).toEqual({ section: 'services', view: { kind: 'none' } });
     expect(routeOf('/services/abcd')).toEqual({ section: 'services', view: { kind: 'session', id: 'abcd' } });
     expect(routeOf('/merchant/xyz')).toEqual({ section: 'services', view: { kind: 'subscribe', code: 'xyz' } });

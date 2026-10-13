@@ -15,7 +15,7 @@ export interface Ready {
   rpc: { url: string; tokenFile: string } | null;
   relayer: string | null;
   libp2pRelay: string[] | null;
-  /** The merchant card code in merchant mode (§11.5), else null. */
+  /** The merchant card code in merchant mode, else null. */
   merchant?: string | null;
 }
 

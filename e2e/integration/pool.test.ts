@@ -1,4 +1,4 @@
-// Deposit, private transfer and withdrawal against real contracts (all-ref §10.7.2, §10.7.9):
+// Deposit, private transfer and withdrawal against real contracts:
 // INT-P1..P6 and the relayer refusals INT-P6b/P6c. Each test builds on the previous one.
 import { parseEther, zeroAddress } from 'viem';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -105,7 +105,7 @@ describe('deposit, private transfer, withdraw', () => {
   });
 });
 
-describe('relayer fees (§10.7.9)', () => {
+describe('relayer fees', () => {
   it('INT-P6b: a relayer refuses a transfer whose fee note is for another relayer', async () => {
     const other = await newRelayer(network, chain, { native: FEE, stable: FEE_STABLE });
     const port: RelayerPort = { info: () => relayer.port.info(), submit: (request) => other.port.submit(request) };

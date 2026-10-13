@@ -1,4 +1,4 @@
-// The local dev chain (all-ref §9.17, §10.2): an anvil node started detached and reused by tests, the
+// The local dev chain: an anvil node started detached and reused by tests, the
 // demo and the deploy scripts. Chain data, the pid file, the log, deployment.json and gas-report.json
 // live in .devnode/. Anvil mines one block per transaction, so the latest block's timestamp stands still
 // while nothing happens; tests mine an empty transaction to bring it up to wall-clock time.

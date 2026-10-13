@@ -1,4 +1,4 @@
-// Per-second subscriptions against real contracts (all-ref §11.5, F17): a subscriber and a merchant built
+// Per-second subscriptions against real contracts: a subscriber and a merchant built
 // as hosts build them (the `Calyptra` facade; the merchant sells EchoServicePort, a fake service that
 // echoes each prompt), one in-process relayer and one libp2p relay. Covered: subscribe, ten paid ticks,
 // pause, resume, end (the cooperative close); the allowance running out; the merchant going offline
@@ -88,7 +88,7 @@ afterAll(async () => {
   await relay?.stop();
 });
 
-describe('per-second subscriptions (§11.5)', () => {
+describe('per-second subscriptions', () => {
   it('subscribe, 10 paid ticks, pause, resume, end', async () => {
     await subscriber.pool.sync();
     const before = stableOf(subscriber);

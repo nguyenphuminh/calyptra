@@ -15,7 +15,7 @@ const RECENT = 8;
 interface ActivityRow { key: string; href: string; title: string; detail: string; at: number }
 
 /**
- * Recent activity (§11.6): one row per subscription ("Calyptra AI · 5 min 12 s · $0.62", never one row
+ * Recent activity: one row per subscription ("Calyptra AI · 5 min 12 s · $0.62", never one row
  * per payment) and one per tab, newest first.
  */
 function activityOf(calyptra: Calyptra): ActivityRow[] {
@@ -66,7 +66,7 @@ function Activity() {
   );
 }
 
-/** My wallet, laid out as the consumer home (§11.6): the private balance first, recent activity, then the account balance. */
+/** My wallet, laid out as the consumer home: the private balance first, recent activity, then the account balance. */
 export function MyWallet({ dialog, sendTo }: { dialog: WalletDialog | null; sendTo?: string }) {
   const { calyptra, version } = useApp();
   const account = calyptra.wallet.activeAccount();

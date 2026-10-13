@@ -17,7 +17,7 @@ contract SharedHarness {
     }
 }
 
-/// all-ref §4.10.5 (shared math: encodings and the tree).
+/// Shared math: encodings and the tree.
 contract SharedMathTest is Test {
     uint256 internal constant R = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
@@ -43,7 +43,7 @@ contract SharedMathTest is Test {
     function test_extDataHashNeedsThreeFullCiphertexts() public view {
         (bool ok, uint256 h) = shared.extDataHash(address(1), new bytes(504));
         assertTrue(ok);
-        // extDataHashOf({ recipient: 0x00..01, three ciphertexts of 168 zero bytes }) (all-ref §3.17).
+        // extDataHashOf({ recipient: 0x00..01, three ciphertexts of 168 zero bytes }).
         assertEq(h, 10472773345416213608939933309650111419917463049876096415424922068459820375380);
         (ok, h) = shared.extDataHash(address(1), new bytes(503));
         assertFalse(ok);

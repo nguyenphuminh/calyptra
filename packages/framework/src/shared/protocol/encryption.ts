@@ -6,7 +6,7 @@ import { utf8ToBytes } from '@noble/hashes/utils.js';
 import { bytesToBigInt, fieldToBytes } from './field.ts';
 import type { NotePreimage } from './note.ts';
 
-// Every note's contents are padded to the same size, so every ciphertext has the same size (BRD 2.2.4).
+// Every note's contents are padded to the same size, so every ciphertext has the same size.
 const VERSION = 1;
 const PLAINTEXT_SIZE = 96;
 const KEY_INFO = utf8ToBytes('calyptra-note-v1');

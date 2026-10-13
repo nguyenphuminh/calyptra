@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 import {Shared, TREE_DEPTH} from "../../src/Shared.sol";
 
-/// Test oracles for the batched insertion (all-ref §3.11): the textbook one-leaf insert and a full
+/// Test oracles for the batched insertion: the textbook one-leaf insert and a full
 /// level-by-level rebuild of the tree.
 library TreeOracle {
     function hash2(uint256 a, uint256 b) internal pure returns (uint256) {

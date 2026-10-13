@@ -1,4 +1,4 @@
-// Low-level helpers for the integration tests (all-ref §10.3.1): the shared dev chain, fresh deployments,
+// Low-level helpers for the integration tests: the shared dev chain, fresh deployments,
 // funded accounts, notes and ciphertexts, real Groth16 proofs, the pool's tree rebuilt from events, and
 // revert-name decoding for simulations.
 import { groth16 } from 'snarkjs';

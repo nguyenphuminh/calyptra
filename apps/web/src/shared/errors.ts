@@ -1,4 +1,4 @@
-// What the website says when something fails (§11.6 consumer wording). The framework's messages are
+// What the website says when something fails. The framework's messages are
 // pinned by the desktop client and the framework's tests, so they stay as they are; this one table turns
 // each AppError code into the words of the website: private balance, Calyptra ID, tab, network fee,
 // privacy relay, message relay, settle. Plain messages pass through; unknown codes and errors that are
@@ -22,7 +22,7 @@ const PASS = null;
  * with several framework messages maps each message (exact text) and falls back to `*`.
  */
 export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
-  // Wallet, passkeys, accounts (§5.4)
+  // Wallet, passkeys, accounts
   WEAK_PASSWORD: PASS,
   INVALID_PHRASE: PASS,
   INVALID_PRIVATE_KEY: PASS,
@@ -41,7 +41,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
     'The shielded address has a typo (checksum mismatch)': 'This Calyptra ID has a typo',
     '*': 'This is not a Calyptra ID',
   },
-  // Network and chain (§5.4); the RPC endpoint check happens in Settings › Advanced, where its own words stay.
+  // Network and chain; the RPC endpoint check happens in Settings › Advanced, where its own words stay.
   RPC_UNREACHABLE: PASS,
   RPC_UNAVAILABLE: 'Calyptra cannot reach the network right now. Try again in a moment, or check Settings › Advanced.',
   WRONG_CHAIN: 'An endpoint in Settings › Advanced answers for another network.',
@@ -58,7 +58,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
     'Start the subscription first': 'Start the session first.',
     '*': 'Unlock your wallet first.',
   },
-  // Private balance (§5.4)
+  // Private balance
   NOT_IN_POOL: `This money has not arrived in your private balance yet. ${TRY_AGAIN}`,
   INVALID_AMOUNT: {
     'The amount must be positive': 'Enter an amount above zero.',
@@ -76,7 +76,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
     'This side’s balance cannot cover the closing fee': 'Your balance in this tab cannot cover the fee to settle it',
     '*': 'Not enough money for this, including the network fee',
   },
-  // Privacy relays: the transaction relayer and its quote (§5.4, §6.14)
+  // Privacy relays: the transaction relayer and its quote
   NO_RELAYER: 'No privacy relay is set up for this network. Add one in Settings › Advanced.',
   FEE_ABOVE_MAX: 'The network fee is higher than the most you accept.',
   TOKEN_NOT_ACCEPTED: 'The privacy relay does not take fees in this currency.',
@@ -88,7 +88,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
   FEE_NOTE_MISMATCH: RELAY_REFUSED,
   BAD_CIPHERTEXTS: RELAY_REFUSED,
   FEE_EXCEEDS_CONTRIBUTION: 'The network fee is larger than the amount to take back.',
-  // Message relays and the other side (§6.14)
+  // Message relays and the other side
   NO_RELAY: {
     'No libp2p relay is reachable; add one in the network settings': 'No message relay answers right now. Try again, or add one in Settings › Advanced.',
     '*': 'Tabs and subscriptions need a message relay. Add one in Settings › Advanced.',
@@ -102,7 +102,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
   INTERNAL: 'The other side could not handle this. Try again later.',
   INVALID_INVITE: PASS,
   INVALID_MERCHANT_CARD: 'This is not a valid Calyptra service link',
-  // Tabs: opening, paying, settling, cancelling (§6.14)
+  // Tabs: opening, paying, settling, cancelling
   OPEN_DECLINED: 'The other side declined this tab',
   PAYMENT_DECLINED: PASS,
   CHANNEL_NOT_FOUND: 'This tab is not in this wallet.',
@@ -135,7 +135,7 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
     'This service is paid in another token': 'This service is paid in another currency.',
     '*': 'Tabs hold dollars or MON only.',
   },
-  // Subscriptions (§11.5)
+  // Subscriptions
   SUBSCRIPTION_NOT_FOUND: 'This subscription is not in this wallet.',
   SERVICE_ERROR: PASS,
   // The merchant's own refusal when its upstream service fails (the desktop merchant's AI adapter).

@@ -1,8 +1,8 @@
-// Channels against real contracts (all-ref §10.7.3-§10.7.6, §6.11.7-6.11.8): opening, payments,
+// Channels against real contracts: opening, payments,
 // cooperative close, failed fundings and cancellation, and the dispute scenarios A, B, C plus the
 // privacy rule of dispute watching. Alice opens (side A), Bob joins (side B, approves everything),
 // Carol joins only channels that ask nothing of her. Tests run in order and share the three users.
-// Dispute windows pass by moving the dev chain's clock (§10 porting notes), not by sleeping.
+// Dispute windows pass by moving the dev chain's clock, not by sleeping.
 import type { Libp2p } from '@libp2p/interface';
 import { parseEther } from 'viem';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -53,7 +53,7 @@ const tick = async (node: ChannelNode): Promise<TickProblem[]> => [
 const problemsFor = (problems: TickProblem[], id: string): TickProblem[] => problems.filter((p) => p.channelId === id);
 const codes = (problems: TickProblem[]): string[] => problems.map((p) => (p.error instanceof AppError ? p.error.code : String(p.error)));
 
-/** Alice opens a channel to Bob, Bob funds on his tick, both become live (§10.7.3 `openLive`). */
+/** Alice opens a channel to Bob, Bob funds on his tick, both become live (`openLive`). */
 async function openLive(window: bigint, amount = mon('0.1'), peerAmount = mon('0.05')): Promise<string> {
   const before = shielded(alice);
   let accepted: { channelId: string; status: string; balance: bigint } | null = null;
@@ -209,7 +209,7 @@ describe('opening refusals', () => {
   });
 
   it('an approval that comes too late: the opener times out having saved nothing; the invitee may cancel its record after ten minutes', async () => {
-    // §6: the approval must come within the P2P timeout (60 s; shortened here, as the P2P tests do).
+    // The approval must come within the P2P timeout (60 s; shortened here, as the P2P tests do).
     const [dan, erin] = await Promise.all([newUser(network, chain), newUser(network, chain)]);
     await dan.pool.deposit(NATIVE, mon('0.1'));
     const approvals: string[] = [];

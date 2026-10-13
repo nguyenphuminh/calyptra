@@ -1,8 +1,8 @@
 import { hash2 } from './poseidon.ts';
 
-/** Depth of the pool's commitment tree: room for about 1 million notes (BRD 2.2.1). */
+/** Depth of the pool's commitment tree: room for about 1 million notes. */
 export const TREE_DEPTH = 20;
-/** The pool contract remembers this many recent roots (BRD 2.2.1). */
+/** The pool contract remembers this many recent roots. */
 export const ROOT_HISTORY_SIZE = 100;
 
 const zeroCache: bigint[] = [];

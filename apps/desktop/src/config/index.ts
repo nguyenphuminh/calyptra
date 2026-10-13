@@ -72,7 +72,7 @@ export const ConfigSchema = z
     }),
     libp2pRelay: z.object({ enabled: z.boolean(), host: z.string(), port, announce: z.array(z.string()).optional() }),
     merchant: z.object({ enabled: z.boolean(), offerFile: z.string().optional(), apiKey: z.string().min(1).optional() }),
-    /** Envio HyperRPC token of the relay host's POST /hyperrpc proxy (§11.3); the proxy is off without it. */
+    /** Envio HyperRPC token of the relay host's POST /hyperrpc proxy; the proxy is off without it. */
     envioToken: z.string().min(1).optional(),
     shell: z.boolean(),
     tickSeconds: z.coerce.number().int().min(1),
@@ -81,7 +81,7 @@ export const ConfigSchema = z
     if (c.command === 'init' && !c.init.source) {
       ctx.addIssue({ code: 'custom', message: 'init needs --phrase, --private-key or --import-file <path>' });
     }
-    // The fees have defaults (§11.2), so only the account must be named.
+    // The fees have defaults, so only the account must be named.
     if (c.relayer.enabled && (!c.relayer.account || !c.relayer.feeNative || !c.relayer.feeStable)) {
       ctx.addIssue({ code: 'custom', message: '--relayer needs --relayer-account <account>' });
     }

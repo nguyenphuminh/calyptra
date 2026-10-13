@@ -41,7 +41,7 @@ export class WorkerProver implements ProverPort {
     return result;
   }
 
-  /** Loads a circuit's proving files into the worker ahead of the first proof (§11.6: right after unlock). */
+  /** Loads a circuit's proving files into the worker ahead of the first proof (right after unlock). */
   prefetch(circuit: CircuitName): void {
     const request: ProveRequest = { id: 0, base: this.base, circuit, input: {}, prefetch: true };
     this.worker.postMessage(request);

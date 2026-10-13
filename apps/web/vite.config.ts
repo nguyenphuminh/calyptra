@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
-/** The circuits' proving files, produced by `npm run setup` (BRD 2.2.1: proofs are built in the browser). */
+/** The circuits' proving files, produced by `npm run setup` (proofs are built in the browser). */
 const ARTIFACTS = resolve(import.meta.dirname, '../../packages/framework/artifacts');
 
 /** Serves the proving files at /artifacts in development and copies them into the build. */
@@ -46,7 +46,7 @@ function artifactsVersion(): string {
 }
 
 /**
- * The PWA's service worker (§11.6): the app shell and the proving files are served cache-first from
+ * The PWA's service worker: the app shell and the proving files are served cache-first from
  * caches named after this build, so a new build replaces them and an old one is deleted on activation.
  * Only production builds get one; the dev server never registers it.
  */

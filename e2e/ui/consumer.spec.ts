@@ -1,4 +1,4 @@
-// §11.10 gate 5 (§11.6 consumer UX, PWA): main screens use no crypto jargon, and the app is installable
+// Consumer UX and PWA: main screens use no crypto jargon, and the app is installable
 // from localhost (a manifest and an active service worker that serves the app shell).
 import type { Page } from '@playwright/test';
 import {
@@ -7,20 +7,19 @@ import {
 } from './helpers.ts';
 
 /**
- * Words main screens never show (§11.6 and the jargon column of §8.11). Left out on purpose, because §11
- * or the product owner's wording keeps them: recovery phrase, private key (import forms), network fee,
+ * Words main screens never show. Left out on purpose, because the product's wording keeps them: recovery phrase, private key (import forms), network fee,
  * account address, MON (fees), MetaMask, Settled, message relay (the notice that points to Advanced),
  * and the round-amount "trace" hint. One error state is scanned too (an over-balance Send).
  */
 const BANNED: RegExp[] = [
-  // never shown (§11.6)
+  // never shown
   /\bshield(ed|ing)?\b/i, /\bnullifiers?\b/i, /\bcommitments?\b/i, /\bproofs?\b/i, /\bnotes?\b/i, /\bunspent\b/i,
-  // only in Advanced (§11.6)
+  // only in Advanced
   /\brelayers?\b/i, /\blibp2p\b/i, /\brpc\b/i, /\bendpoints?\b/i,
-  // baseline terms §11.6 renames
+  // protocol terms the app renames
   /\bchannels?\b/i, /\bdeposit(s|ed|ing)?\b/i, /\bwithdraw(s|n|al|als|ing)?\b/i, /\bsend privately\b/i, /\bpublic balance\b/i,
   /\bcooperative(ly)?\b/i, /\bdisputes?\b/i,
-  // "never mentions a blockchain" (§11.6) and the rest of §8.11
+  // "never mentions a blockchain" and other jargon
   /\bblockchain\b/i, /\bon-?chain\b/i, /\boff-?chain\b/i, /\bchain\b/i, /\bmonad\b/i, /\bzk\b/i, /\bzero[- ]knowledge\b/i, /\bgas\b/i,
   /\btransactions?\b/i, /\bsmart contracts?\b/i, /\bpool\b/i, /\bsync(ing|ed)?\b/i, /\bdeployed\b/i, /\bfund(ed|ing)?\b/i,
   /\bcontributions?\b/i, /\bfinaliz(e|es|ed|ing)\b/i, /\bnonce\b/i, /\btokens?\b/i,

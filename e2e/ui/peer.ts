@@ -1,6 +1,6 @@
-// A framework node in the test process (all-ref §10.1 UI tier): the counterparty of the dispute tests,
+// A framework node in the test process (UI tier): the counterparty of the dispute tests,
 // which need a dispute window shorter than the website's fixed 7 days, and the echo merchant of the
-// subscription test (§11.5). It reaches web users through the desktop client's libp2p relay and relayer.
+// subscription test. It reaches web users through the desktop client's libp2p relay and relayer.
 import './port.ts';
 import { english, generateMnemonic } from 'viem/accounts';
 import {
@@ -17,7 +17,7 @@ import {
 import { createPeerNode } from '../../packages/framework/src/libp2p.node.ts';
 import { REPO } from '../../scripts/lib/devnode.ts';
 
-/** scrypt lowered for test speed (all-ref §10.3.2). */
+/** scrypt lowered for test speed. */
 const FAST_KDF = { N: 2 ** 10, r: 8, p: 1 };
 const PASSWORD = 'password123';
 

@@ -1,7 +1,7 @@
 import { isAppError, type ChannelRecord } from '@calyptra/framework';
 import { errorText } from '../../shared/ui.tsx';
 
-/** A channel this tab is opening, shown while the other side decides (BRD 2.2.14.8). In memory only. */
+/** A channel this tab is opening, shown while the other side decides. In memory only. */
 export interface PendingOpen {
   id: string; // local id and address: #/channels/<id>
   accountId: string;

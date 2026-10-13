@@ -17,7 +17,7 @@ import { isChatOpen, routeOf, type Route } from './routes.ts';
 import { startNode } from './settings.ts';
 import { WorkerProver } from './worker-prover.ts';
 
-/** Which tab or subscription a background problem is about, by name rather than by id (§8.11 row 80). */
+/** Which tab or subscription a background problem is about, by name rather than by id. */
 function subjectOf(calyptra: Calyptra, channelId: string): string {
   const subscription = subscriptionsOf(calyptra).find((s) => s.channelId === channelId);
   if (subscription) return `Subscription to ${subscription.merchant}`;
@@ -32,7 +32,7 @@ function subjectOf(calyptra: Calyptra, channelId: string): string {
 const TICK_MS = Number(import.meta.env.VITE_CALYPTRA_TICK_MS ?? 10_000);
 
 type Section = Route['section'];
-/** Main navigation: the sidebar on wide screens, the bottom tab bar on phones (§11.5 adds Services). */
+/** Main navigation: the sidebar on wide screens, the bottom tab bar on phones. */
 const NAV: { section: Section; href: string; label: string; icon: ReactNode }[] = [
   { section: 'channels', href: '#/channels', label: 'Tabs', icon: <ChannelsIcon /> },
   { section: 'services', href: '#/services', label: 'Services', icon: <ServicesIcon /> },
@@ -89,7 +89,7 @@ export function App() {
     await startNode(calyptra);
     setPhase('ready');
     refresh();
-    // §11.6, proof wait: load the transfer circuit's proving files (about 21 MB) before the first payment.
+    // Proof wait: load the transfer circuit's proving files (about 21 MB) before the first payment.
     prover.prefetch('transfer');
   }, [calyptra, prover, refresh]);
 

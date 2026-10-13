@@ -48,7 +48,7 @@ async function main(argv: readonly string[]): Promise<void> {
   const logger = createLogger(config.logLevel);
   const networks: NetworkConfig[] = [...BUILT_IN_NETWORKS];
   if (config.networkFile) networks.push(NetworkConfigSchema.parse(JSON.parse(await readFile(config.networkFile, 'utf8'))));
-  // Merchant mode (§11.5): the offer is checked before anything starts; the facade sells it on every session.
+  // Merchant mode: the offer is checked before anything starts; the facade sells it on every session.
   const offer = config.command === 'start' && config.merchant.enabled ? OfferSchema.parse(JSON.parse(await readFile(config.merchant.offerFile ?? '', 'utf8'))) : undefined;
   const calyptra = new Calyptra({
     store: new FileStore(config.dataDir),
@@ -227,7 +227,7 @@ async function start(config: Config, calyptra: Calyptra, logger: Logger, offer: 
   }
 }
 
-/** The relay host's wallet-sync proxy (§11.3): on only with an Envio token and deployed contracts. */
+/** The relay host's wallet-sync proxy: on only with an Envio token and deployed contracts. */
 function hyperRpcOf(config: Config, network: NetworkConfig, logger: Logger): HyperRpcService | undefined {
   if (!config.envioToken || !network.contracts) return undefined;
   logger.info({ module: 'hyperrpc' }, 'wallet-sync proxy enabled at POST /hyperrpc');

@@ -6,7 +6,7 @@ import { AmountField, closeTo, Field, Modal, Notice, RelayedSubmit } from '../..
 import { TokenSelect } from '../public/index.ts';
 import { presetsOf } from './Deposit.tsx';
 
-/** Cash out: a withdrawal from the private balance to an address the user enters (BRD 2.2.5). */
+/** Cash out: a withdrawal from the private balance to an address the user enters. */
 export function Withdraw() {
   const { calyptra, refresh } = useApp();
   const network = calyptra.network();

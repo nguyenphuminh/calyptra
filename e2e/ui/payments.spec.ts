@@ -1,4 +1,4 @@
-// Paying in a tab and settling it (all-ref §10.7.4 and §10.7.5: UI-C1, UI-C4, UI-C6): confirmed and
+// Paying in a tab and settling it (UI-C1, UI-C4, UI-C6): confirmed and
 // cancelled payments, payments both ways, nicknames, a locked receiver, a dollar tab, settling, and a
 // tab carried by an export file into a fresh browser.
 import type { Page } from '@playwright/test';

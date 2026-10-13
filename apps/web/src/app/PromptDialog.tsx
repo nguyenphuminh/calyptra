@@ -13,7 +13,7 @@ export function PromptDialog({ asked }: { asked: Asked }) {
     : <ApproveOpen key={asked.id} asked={{ ...asked, prompt }} />;
 }
 
-/** BRD 2.2.8: no outgoing payment is signed without the user's confirmation. No close button: the user must choose. */
+/** No outgoing payment is signed without the user's confirmation. No close button: the user must choose. */
 function ConfirmPayment({ prompt, onAnswer }: { prompt: Extract<Prompt, { kind: 'confirm-payment' }>; onAnswer: (answer: boolean) => void }) {
   const { calyptra } = useApp();
   const peerId = calyptra.channels.get(prompt.channelId).peer.peerId;
@@ -28,7 +28,7 @@ function ConfirmPayment({ prompt, onAnswer }: { prompt: Extract<Prompt, { kind: 
   );
 }
 
-/** BRD 2.2.7, 2.2.14.9: a tab that asks for the user's money needs approval; closing the dialog answers nothing. */
+/** A tab that asks for the user's money needs approval; closing the dialog answers nothing. */
 function ApproveOpen({ asked }: { asked: ChannelRequest }) {
   const { prompts } = useApp();
   const { request } = asked.prompt;

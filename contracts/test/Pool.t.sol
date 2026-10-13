@@ -24,7 +24,7 @@ import {
 import {TestStablecoin} from "../src/test/TestStablecoin.sol";
 import {CalyptraTest} from "./utils/CalyptraTest.sol";
 
-/// all-ref §4.10.1 (fixture pool.json; stablecoin 0x5555…55, verifier 0x0101…01, hasher 0x0202…02,
+/// The pool (fixture pool.json; stablecoin 0x5555…55, verifier 0x0101…01, hasher 0x0202…02,
 /// disputes 0x0303…03).
 contract PoolTest is CalyptraTest {
     address internal constant STABLECOIN = 0x5555555555555555555555555555555555555555;

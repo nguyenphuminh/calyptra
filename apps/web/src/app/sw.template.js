@@ -1,4 +1,4 @@
-// Calyptra's service worker (§11.6, PWA). The build (vite.config.ts) fills in the three placeholders.
+// Calyptra's service worker (PWA). The build (vite.config.ts) fills in the three placeholders.
 // App shell and proving files are served cache-first from caches named after their versions; a new
 // build installs new caches and deletes the old ones when it activates.
 const SHELL_CACHE = 'calyptra-shell-__SHELL_VERSION__';

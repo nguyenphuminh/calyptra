@@ -33,7 +33,7 @@ import {
     UnknownRoot
 } from "../src/Shared.sol";
 
-/// Pins the selectors, event topics and error selectors of all-ref §4.3 (the off-chain ABI).
+/// Pins the selectors, event topics and error selectors of the off-chain ABI.
 contract AbiTest is Test {
     function test_poolSelectorsAndTopics() public pure {
         assertEq(Pool.initialize.selector, bytes4(0xf8c8765e));

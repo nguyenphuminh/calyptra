@@ -1,7 +1,7 @@
 import type { Calyptra } from '@calyptra/framework';
 import { z } from 'zod';
 
-// Names the user gives to channel peers, keyed by libp2p peer id (BRD 2.2.14.7). Local labels: never sent
+// Names the user gives to channel peers, keyed by libp2p peer id. Local labels: never sent
 // to the peer. Kept in the encrypted wallet per account and network, so the export file carries them.
 const SECTION = 'web-nicknames';
 const NicknamesSchema = z.record(z.string(), z.string());

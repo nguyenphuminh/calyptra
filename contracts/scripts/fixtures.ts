@@ -1,4 +1,4 @@
-// Contract test fixtures with REAL Groth16 proofs (all-ref §4.10.6): writes circuits/build/fixtures/pool.json
+// Contract test fixtures with REAL Groth16 proofs: writes circuits/build/fixtures/pool.json
 // and dispute.json from the proving artifacts in packages/framework/artifacts. Run it after every circuit
 // setup (`npm run setup` does), because the verifying keys and the proofs belong to one trusted setup.
 // Deposits are mirrored with the same commitments the pool computes, so every proof is built against the

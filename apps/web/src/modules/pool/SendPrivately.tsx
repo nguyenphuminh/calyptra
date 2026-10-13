@@ -17,7 +17,7 @@ const isCalyptraId = (text: string): boolean => {
   }
 };
 
-/** Send: a private transfer to a Calyptra ID (the shielded address), relayed (BRD 2.2.3). */
+/** Send: a private transfer to a Calyptra ID (the shielded address), relayed. */
 export function SendPrivately({ initialTo = '' }: { initialTo?: string }) {
   const { calyptra, refresh } = useApp();
   const network = calyptra.network();

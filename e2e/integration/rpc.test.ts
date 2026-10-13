@@ -1,6 +1,6 @@
-// RPC endpoints (all-ref §10.7.7): failover, range-limited and lagging endpoints, chain checks, and a
+// RPC endpoints: failover, range-limited and lagging endpoints, chain checks, and a
 // transaction never re-sent elsewhere (INT-R1..R6), through local JSON-RPC proxies in front of the dev
-// chain. Then wallet sync through the network's history endpoints (§11.3, `logRpcUrls`): the desktop
+// chain. Then wallet sync through the network's history endpoints (`logRpcUrls`): the desktop
 // client's real POST /hyperrpc route, served in-process from its event cache (filled from the dev chain
 // standing in for Envio HyperRPC), and the order endpoints are tried in (user endpoints, then
 // logRpcUrls, then the network's RPC endpoints; only the user's when the fallback is off).
@@ -20,7 +20,7 @@ import { devNetwork, newCalyptra, newPhrase, newRelayer, newUser, until } from '
 
 const NATIVE = 0n;
 const CENT = parseEther('0.01');
-/** §10.6: the RPC tests' adapter options. */
+/** The RPC tests' adapter options. */
 const OPTIONS: ChainAdapterOptions = { logWindow: 64n, minLogWindow: 2n, retryAfterMs: 500 };
 
 let d: Deployment;
@@ -46,7 +46,7 @@ beforeAll(async () => {
 
 afterAll(closeProxies);
 
-describe('RPC endpoints (§10.7.7)', () => {
+describe('RPC endpoints', () => {
   it('INT-R1: reads the full history through a range-limited endpoint by shrinking the window', async () => {
     const limited = await proxy({ maxRange: 8 });
     const expected = await history(direct);
@@ -115,7 +115,7 @@ describe('RPC endpoints (§10.7.7)', () => {
   });
 });
 
-describe('wallet sync through the network’s history endpoints (§11.3)', () => {
+describe('wallet sync through the network’s history endpoints', () => {
   /** The network's own RPC endpoint and the user's own endpoint (recording proxies of the dev chain). */
   let networkRpc: RpcProxy;
   let userRpc: RpcProxy;

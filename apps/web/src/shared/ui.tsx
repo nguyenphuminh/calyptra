@@ -198,7 +198,7 @@ export function AmountField({ label, token, value, onChange, presets }: { label:
   );
 }
 
-/** What a busy submit says while the proof of a private payment is built (§11.6, proof wait). */
+/** What a busy submit says while the proof of a private payment is built. */
 export const PROVING_TEXT = 'Securing your payment privately…';
 
 /**

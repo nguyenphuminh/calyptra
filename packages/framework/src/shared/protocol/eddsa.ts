@@ -6,7 +6,7 @@ import { bytesToBigInt, fieldToBytes } from './field.ts';
 
 /**
  * EdDSA over BabyJubJub with Poseidon, as checked by circomlib's EdDSAPoseidonVerifier:
- * S * B8 == R8 + 8 * H(R8, A, M) * A. Used for the per-channel signing keys (BRD 2.2.7).
+ * S * B8 == R8 + 8 * H(R8, A, M) * A. Used for the per-channel signing keys.
  */
 export interface StateSignature {
   R8x: bigint;

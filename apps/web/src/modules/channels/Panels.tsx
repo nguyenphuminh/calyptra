@@ -68,7 +68,7 @@ export function InviteDialog() {
   );
 }
 
-/** Start a tab with someone's invite (BRD 2.2.7, 2.2.14.8): checked here, then opened in the background. */
+/** Start a tab with someone's invite: checked here, then opened in the background. */
 export function OpenDialog({ initialInvite }: { initialInvite: string }) {
   const { calyptra, pendingOpens } = useApp();
   const network = calyptra.network();

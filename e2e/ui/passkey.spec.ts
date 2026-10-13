@@ -1,4 +1,4 @@
-// §11.10 gates for Mera passkey accounts (§11.4) on localhost: create, unlock and restore with a DevTools
+// Mera passkey accounts on localhost: create, unlock and restore with a DevTools
 // virtual authenticator with PRF, and the recovery phrase's export and import round trip. A passkey's
 // relying party is the site's hostname, and an IP address cannot be one, so these tests use localhost.
 import type { Page } from '@playwright/test';

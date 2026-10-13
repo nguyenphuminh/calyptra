@@ -7,7 +7,7 @@ include "lib/channel.circom";
 include "lib/constants.circom";
 include "lib/merkle.circom";
 
-// Starts or answers a dispute (BRD 2.2.10.1). Reveals only the channel nullifier, the nonce, the
+// Starts or answers a dispute. Reveals only the channel nullifier, the nonce, the
 // state hash and the dispute window. Every contribution the state lists must exist in the pool, so a
 // counterparty that never funded cannot block a refund with a state listing a missing contribution.
 template SubmitState(levels) {

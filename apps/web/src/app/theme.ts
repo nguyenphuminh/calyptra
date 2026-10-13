@@ -1,4 +1,4 @@
-// BRD 2.2.14.10: light or dark like the device, unless the user chose one in Settings > Appearance.
+// Light or dark like the device, unless the user chose one in Settings > Appearance.
 // The choice belongs to the browser, not to a wallet, and is kept unencrypted.
 export type ThemeChoice = 'system' | 'light' | 'dark';
 const KEY = 'calyptra.theme';

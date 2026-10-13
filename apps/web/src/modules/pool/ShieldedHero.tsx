@@ -7,7 +7,7 @@ import { DepositIcon, SendIcon, ServicesIcon, ShieldIcon } from '../../shared/ic
 import { ActionLink, Button, Copy, ErrorNote, Notice, useAction, useLoad } from '../../shared/ui.tsx';
 
 /**
- * The private balance (the shielded pool balance) as the hero of My wallet (§11.6): dollars first, three
+ * The private balance (the shielded pool balance) as the hero of My wallet: dollars first, three
  * actions (Add money, Send, Services), the Calyptra ID to get paid, and the less common Receive and Cash out.
  */
 export function ShieldedHero() {

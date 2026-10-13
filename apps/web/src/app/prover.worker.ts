@@ -1,6 +1,6 @@
 import * as snarkjs from 'snarkjs';
 
-/** A proof to build, or (`prefetch`) only the circuit's proving files to load ahead of time (§11.6). */
+/** A proof to build, or (`prefetch`) only the circuit's proving files to load ahead of time. */
 export interface ProveRequest { id: number; base: string; circuit: string; input: Record<string, unknown>; prefetch?: boolean; }
 export type ProveReply = { id: number; proof: snarkjs.Groth16Proof; publicSignals: string[] } | { id: number; error: string };
 

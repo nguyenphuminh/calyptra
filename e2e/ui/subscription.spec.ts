@@ -1,4 +1,4 @@
-// §11.10 gate for per-second subscriptions (§11.5, F17): subscribe and chat against the echo merchant the
+// Per-second subscriptions: subscribe and chat against the echo merchant the
 // global setup runs (a framework node with EchoServicePort, listed in the dev network's `merchants`).
 // The subscriber is a passkey wallet, so the Subscribe sheet's one passkey confirmation is covered too.
 import type { Locator, Page } from '@playwright/test';

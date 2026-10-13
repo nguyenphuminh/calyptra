@@ -113,7 +113,7 @@ function network(rpcUrl: string, extra: Partial<NetworkConfig> = {}): NetworkCon
   };
 }
 
-describe('ChainAdapter event scans (§11.3)', () => {
+describe('ChainAdapter event scans', () => {
   it('scans the RPC endpoints in 100-block windows and decodes commitments in leaf order', async () => {
     const node = await rpc({ head: 250, maxRange: 100 });
     const events = await new ChainAdapter(network(node.url)).poolEvents(1n);

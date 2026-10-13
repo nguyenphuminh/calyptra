@@ -23,7 +23,7 @@ const FEE_SIGNAL = { transact: 8, finalize: 6, reclaim: 6 } as const;
  * so every transaction carries an explicit limit: the worst case measured on the Solidity contracts
  * with real proofs under Foundry's Monad gas schedule (a 3-leaf tree insert at the worst alignment)
  * plus 12-15 %, as recommended by contracts/test/Gas.t.sol. Operators can override them through
- * `RelayerOptions.gasLimits` once measured on Monad testnet (§13.1 V3).
+ * `RelayerOptions.gasLimits` once measured on Monad testnet.
  */
 export const DEFAULT_GAS_LIMITS: Readonly<Record<RelayKind, bigint>> = {
   transact: 3_000_000n,

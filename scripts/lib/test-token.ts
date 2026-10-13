@@ -1,4 +1,4 @@
-// The test stablecoin for local chains (all-ref §9.18.3, §10.2): a plain 6-decimal ERC-20 that anyone can
+// The test stablecoin for local chains: a plain 6-decimal ERC-20 that anyone can
 // mint, compiled at test time with solc-js from e2e/contracts/TestStablecoin.sol. Never for a public network.
 import { readFileSync } from 'node:fs';
 import solc from 'solc';

@@ -27,7 +27,7 @@ describe('amounts', () => {
     expect(formatBalance('stablecoin', 88_770_001n)).toBe('88.770001 AUSD');
   });
 
-  it('shows the stablecoin as dollars with 2 decimals, cut, never rounded up (§11.6)', () => {
+  it('shows the stablecoin as dollars with 2 decimals, cut, never rounded up', () => {
     expect(formatDollars(7_490_000n)).toBe('$7.49');
     expect(formatDollars(7_499_999n)).toBe('$7.49');
     expect(formatDollars(0n)).toBe('$0.00');

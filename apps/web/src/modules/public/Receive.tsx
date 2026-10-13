@@ -3,7 +3,7 @@ import { useApp } from '../../app/context.ts';
 import { PUBLIC_ADDRESS_TEXT, SHIELDED_ADDRESS_TEXT } from '../../shared/addresses.ts';
 import { closeTo, Copy, Modal, Notice, Qr, useLoad } from '../../shared/ui.tsx';
 
-/** A link that opens Calyptra's Send dialog with this Calyptra ID filled in (§11.7: an ID shared as a link or QR code). */
+/** A link that opens Calyptra's Send dialog with this Calyptra ID filled in (an ID shared as a link or QR code). */
 export const paymentLink = (calyptraId: string): string => `${location.origin}/#/send/${calyptraId}`;
 
 /** Receive: the Calyptra ID for private payments, and the account address for adding money. */

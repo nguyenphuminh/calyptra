@@ -1,4 +1,4 @@
-// Add money, Send, Cash out (all-ref §10.7.2: UI-P1, UI-P2), in the consumer wording of §11.6.
+// Add money, Send, Cash out (UI-P1, UI-P2), in the consumer wording.
 import { parseEther, type Address } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { devPublicClient } from '../../scripts/lib/devnode.ts';
@@ -90,7 +90,7 @@ test('UI-P2: dollars: add with approval, send, refuse more than the balance, cas
 
   await openAction(alice, 'Add money');
   const add = popup(alice, 'Add money');
-  await expect(add.getByLabel('Currency')).toHaveValue('stablecoin'); // dollars first (§11.6)
+  await expect(add.getByLabel('Currency')).toHaveValue('stablecoin'); // dollars first
   await expect(add.getByRole('button', { name: '1000', exact: true })).toBeVisible();
   await add.getByRole('button', { name: '10', exact: true }).click();
   await add.getByRole('button', { name: 'Add money', exact: true }).click();

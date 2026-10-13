@@ -5,7 +5,7 @@ include "lib/channel.circom";
 include "lib/constants.circom";
 include "lib/spend.circom";
 
-// Settles a disputed channel after its deadline (BRD 2.2.10.2): same shape as a cooperative close,
+// Settles a disputed channel after its deadline: same shape as a cooperative close,
 // but the state must hash to the pending state hash instead of carrying the final flag.
 template Finalize(levels) {
     signal input root;

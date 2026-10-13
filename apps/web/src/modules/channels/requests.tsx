@@ -8,7 +8,7 @@ import { Button, ErrorNote, Field, Money, Notice, useAction, useLoad } from '../
 import { MAX_NICKNAME, setNickname } from './nicknames.ts';
 import { peerName } from './status.ts';
 
-/** A channel request waiting for the user's answer (BRD 2.2.7, 2.2.14.9). */
+/** A channel request waiting for the user's answer. */
 export type ChannelRequest = Asked<{ kind: 'approve-open'; request: OpenRequest }>;
 
 /** What each side puts into the requested tab. */

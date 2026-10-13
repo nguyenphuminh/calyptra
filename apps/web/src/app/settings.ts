@@ -1,7 +1,7 @@
 import { HttpRelayer, type Calyptra } from '@calyptra/framework';
 import { z } from 'zod';
 
-// User-editable network settings (BRD 2.2.11, 2.2.14.5), stored inside the encrypted wallet vault.
+// User-editable network settings, stored inside the encrypted wallet vault.
 // They apply to every account on the selected network.
 const WebSettingsSchema = z.object({
   relayers: z.array(z.string()), // transaction relayer base URLs (HTTP)

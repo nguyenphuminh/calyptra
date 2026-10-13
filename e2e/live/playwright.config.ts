@@ -1,8 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-// Live tier (all-ref §9.22, §10.5): the deployed website, the live relayer and libp2p relay, Monad testnet.
-// Stage 2 only (§11.10): the site's address is the product owner's domain, still a placeholder, so runs set
-// CALYPTRA_LIVE_URL. Nothing local is started.
+// Live tier: the deployed website, the live relayer and libp2p relay, Monad testnet.
+// CALYPTRA_LIVE_URL overrides the site's address (https://calyptra.space by default). Nothing local is started.
 export default defineConfig({
   testDir: '.',
   testMatch: '**/*.spec.ts',

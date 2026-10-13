@@ -1,4 +1,4 @@
-// Settling without the other side (all-ref §10.7.6: UI-D1, UI-D2, UI-D3). The website always opens tabs
+// Settling without the other side (UI-D1, UI-D2, UI-D3). The website always opens tabs
 // with the 7-day window, so the counterparty is a framework node in the test process that opens with a
 // 20-second window (the test contracts accept 10 s and up); the web wallet is the invitee.
 import { setTimeout as sleep } from 'node:timers/promises';

@@ -20,7 +20,7 @@ import {
 import {CalyptraTest} from "./utils/CalyptraTest.sol";
 import {MockPool} from "./utils/Mocks.sol";
 
-/// all-ref §4.10.2 (fixture dispute.json; pool 0x0a0a…0a mocked, verifier 0x0101…01, T0 = 1_800_000_000).
+/// The disputes contract (fixture dispute.json; pool 0x0a0a…0a mocked, verifier 0x0101…01, T0 = 1_800_000_000).
 contract DisputesTest is CalyptraTest {
     address internal constant POOL = 0x0A0A0a0a0a0a0a0A0a0a0A0a0A0A0A0a0a0a0a0a;
     address internal constant VERIFIER = 0x0101010101010101010101010101010101010101;

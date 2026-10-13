@@ -1,6 +1,6 @@
 import type { ChannelStatus } from '@calyptra/framework';
 
-// Consumer wording (§11.6): a channel with a person is a "tab"; a cooperative close is "settling";
+// Consumer wording: a channel with a person is a "tab"; a cooperative close is "settling";
 // a dispute is "settling without the other side".
 export const STATUS_TEXT: Record<ChannelStatus, string> = {
   opening: 'Starting', // accepted; contributions not yet confirmed

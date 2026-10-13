@@ -5,7 +5,7 @@ import { isPasskeyCancelled, passkeyErrorText, passkeyUnlockKey } from '../../sh
 import { Button, Card, ErrorNote, Field, Hero, Notice, useAction, useLoad } from '../../shared/ui.tsx';
 import { AuthLayout, PhraseNotice } from './Onboarding.tsx';
 
-/** The lock screen: a password, or the wallet's passkey (§11.4). The wallet unlocks once per tab. */
+/** The lock screen: a password, or the wallet's passkey. The wallet unlocks once per tab. */
 export function Unlock({ calyptra, onReady }: { calyptra: Calyptra; onReady: () => Promise<void> }) {
   const [resetting, setResetting] = useState(false);
   const [password, setPassword] = useState('');

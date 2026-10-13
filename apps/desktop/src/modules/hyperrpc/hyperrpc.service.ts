@@ -41,7 +41,7 @@ const topicsMatch = (log: CachedLog, rules: readonly (string[] | null)[]): boole
   rules.length <= log.topics.length && rules.every((rule, i) => rule === null || rule.includes(log.topics[i] ?? ''));
 
 /**
- * Wallet sync through Envio HyperRPC (§11.3), served from the relay host's event cache: answers the
+ * Wallet sync through Envio HyperRPC, served from the relay host's event cache: answers the
  * event queries of the Calyptra contracts and refuses everything else with JSON-RPC error -32601, so the
  * token cannot be used for anything else. Clients never reach Envio: only the cache does, within the
  * free tier's quota. Every query is "all events of the pool (or disputes) contract in a block range",

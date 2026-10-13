@@ -53,7 +53,7 @@ function LogoSelect({ id, logo, value, disabled, onChange, children, ...rest }: 
 
 /**
  * The network the wallet works on, with the network's logo when it has one (7.13.2). On the consumer
- * screens it lives in Settings › Advanced (§11.6: networks are an advanced setting).
+ * screens it lives in Settings › Advanced (networks are an advanced setting).
  */
 export function NetworkSelect() {
   const { calyptra } = useApp();

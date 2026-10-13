@@ -15,7 +15,7 @@ const SUBSCRIPTION_STATUS: Record<string, string> = {
   disputing: 'Settling without them', settled: 'Ended', cancelled: 'Cancelled',
 };
 
-/** Services paid by the second (§11.5): the merchants to subscribe to, the user's subscriptions, and a session. */
+/** Services paid by the second: the merchants to subscribe to, the user's subscriptions, and a session. */
 export function ServicesPage({ view }: { view: ServicesView }) {
   const { calyptra, version } = useApp();
   const [link, setLink] = useState('');

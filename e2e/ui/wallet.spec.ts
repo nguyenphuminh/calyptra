@@ -1,5 +1,5 @@
-// The wallet (all-ref §10.7.1: UI-W1 to UI-W8): create, import, accounts, password and lock, reset,
-// export and restore, networks, the recovery-phrase banner and the theme, in the §11.6 wording.
+// The wallet (UI-W1 to UI-W8): create, import, accounts, password and lock, reset,
+// export and restore, networks, the recovery-phrase banner and the theme, in the app's wording.
 import { readFile } from 'node:fs/promises';
 import type { Page } from '@playwright/test';
 import { generatePrivateKey, mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';

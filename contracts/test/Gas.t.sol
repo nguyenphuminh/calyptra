@@ -23,12 +23,12 @@ contract PayoutProbe {
 
 /// Gas per operation on the real contracts with real proofs, priced with Foundry's Monad schedule
 /// (foundry.toml `network = "monad"`). Monad bills the declared gas LIMIT, so callers must send the
-/// explicit limits below (all-ref §11.2: measured worst case + 10-15 %). Accurate figures need
+/// explicit limits below (measured worst case + 10-15 %). Accurate figures need
 /// isolated transactions (intrinsic + calldata gas included, fresh access lists):
 ///     forge test --isolate --match-contract GasTest -vv
 /// The worst case of a 3-leaf insert (39 Poseidon hashes) is reached by placing leafCount at 2^19 - 1.
 contract GasTest is CalyptraTest {
-    // Recommended explicit gas limits: the worst case measured below + 12-15 % (all-ref §11.2). Asserted,
+    // Recommended explicit gas limits: the worst case measured below + 12-15 %. Asserted,
     // so a gas regression fails here first.
     //   deposit:      worst = first deposit into the empty tree (20 frontier slots written from zero),
     //                 1,161,092 (stablecoin) / 1,096,164 (native); later deposits ~753k / ~821k. The limit

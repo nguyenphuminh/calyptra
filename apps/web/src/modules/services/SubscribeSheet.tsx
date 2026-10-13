@@ -6,10 +6,10 @@ import { confirmWithPasskey, isPasskeyCancelled, passkeyErrorText } from '../../
 import { AmountField, Button, closeTo, ErrorNote, Modal, Notice, PROVING_TEXT, useAction, useLoad } from '../../shared/ui.tsx';
 import { cardOf, rememberMerchant } from './merchants.ts';
 
-/** Allowance presets of the subscribe sheet: $1, $5, $20 (placeholders until the demo prices are set, §13.2). */
+/** Allowance presets of the subscribe sheet: $1, $5, $20. */
 const ALLOWANCE_PRESETS = [1_000_000n, 5_000_000n, 20_000_000n];
 
-/** A merchant's price per second, minute and hour (§11.5: each card shows all three). */
+/** A merchant's price per second, minute and hour (each card shows all three). */
 export function priceText(card: MerchantCard): string {
   const rate = card.offer.ratePerSecond;
   return `${formatDollarsExact(rate)} / second · ${formatDollarsExact(rate * 60n)} / minute · ${formatDollarsExact(rate * 3600n)} / hour`;
@@ -52,7 +52,7 @@ function Subscribe({ card }: { card: MerchantCard }) {
     if (allowance === null) return;
     if (method.data === 'passkey') {
       try {
-        await confirmWithPasskey(); // the one confirmation of a subscription (§11.5)
+        await confirmWithPasskey(); // the one confirmation of a subscription
       } catch (err) {
         if (isPasskeyCancelled(err)) return;
         throw new Error(passkeyErrorText(err), { cause: err });

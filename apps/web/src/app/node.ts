@@ -18,7 +18,7 @@ function devNetworks(): NetworkConfig[] {
 
 /**
  * The website's composition root: the framework node with the browser's storage, proving files and libp2p.
- * The prover is created by the shell, which also asks it whether a proof is running (§11.6, proof wait).
+ * The prover is created by the shell, which also asks it whether a proof is running.
  */
 export function createCalyptra(prompts: Prompts, prover: WorkerProver, onChanged: () => void): Calyptra {
   return new Calyptra({
@@ -27,13 +27,13 @@ export function createCalyptra(prompts: Prompts, prover: WorkerProver, onChanged
     prover,
     createNode: createBrowserNode,
     networks: [...BUILT_IN_NETWORKS, ...devNetworks()],
-    // BRD 2.2.7: a channel that needs none of the user's money opens without asking.
+    // A channel that needs none of the user's money opens without asking.
     approveOpen: (request) => (request.peerAmount === 0n ? Promise.resolve(true) : prompts.ask({ kind: 'approve-open', request }, APPROVAL_TIMEOUT_MS)),
-    // The channel of an accepted request takes its place in the channel list (BRD 2.2.14.9).
+    // The channel of an accepted request takes its place in the channel list.
     onJoined: (channelId) => prompts.joined(channelId),
     // A payment the other side made shows at once, not on the next background tick.
     onChanged: () => onChanged(),
-    // BRD 2.2.8: no outgoing payment is signed without the user's confirmation in the wallet's dialog.
+    // No outgoing payment is signed without the user's confirmation in the wallet's dialog.
     confirmPayment: (payment) => prompts.ask({ kind: 'confirm-payment', ...payment }),
   });
 }

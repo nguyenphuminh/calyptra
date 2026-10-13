@@ -28,7 +28,7 @@ export const EditIcon = () => <Icon><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16
 export const CloseIcon = () => <Icon><path d="M6 6l12 12M18 6 6 18" /></Icon>;
 export const ThemeIcon = () => <Icon><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></Icon>;
 
-// Icons added for the consumer screens of §11.5 and §11.6.
+// Icons of the consumer screens.
 /** Services paid by the second: a clock face with a quick sweep. */
 export const ServicesIcon = () => <Icon><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M10 2.5h4" /></Icon>;
 /** A passkey: a fingerprint-like set of arcs. */

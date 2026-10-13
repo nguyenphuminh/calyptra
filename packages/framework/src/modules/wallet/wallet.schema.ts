@@ -40,7 +40,7 @@ const PasswordEnvelopeSchema = z.object({
   ciphertext: hex,
 });
 
-/** A vault opened with a passkey (§11.4): the 32-byte key is derived from the passkey's PRF output. */
+/** A vault opened with a passkey: the 32-byte key is derived from the passkey's PRF output. */
 const PasskeyEnvelopeSchema = z.object({
   ...envelopeHeader,
   unlock: z.literal('passkey'),

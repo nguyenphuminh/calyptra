@@ -1,4 +1,4 @@
-// Contract build and deployment helpers (all-ref §9.18.1-2, §10.2). Contracts are built with Foundry
+// Contract build and deployment helpers. Contracts are built with Foundry
 // (contracts/) and deployed as plain creation transactions, strictly one after another, each awaited:
 // a public RPC can hand out a stale nonce, and Monad's `pending` nonce behaves like `latest`.
 import { execFileSync } from 'node:child_process';

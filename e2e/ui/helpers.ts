@@ -1,4 +1,4 @@
-// Helpers of the UI tier (all-ref §10.4.2), in the website's consumer wording (§11.6): tabs, private
+// Helpers of the UI tier, in the website's consumer wording: tabs, private
 // balance, Add money / Send / Cash out, Settings › Advanced.
 import './port.ts';
 import { appendFileSync, writeFileSync } from 'node:fs';
@@ -251,7 +251,7 @@ export async function devWallet(newUser: (name: string) => Promise<Page>, name: 
 export const tabStatus = (tab: Locator): Locator => tab.locator('.conversation-head .pill');
 
 /**
- * A DevTools (CDP) virtual authenticator on this page (§11.10: passkey gates), a platform passkey with
+ * A DevTools (CDP) virtual authenticator on this page (passkey tests), a platform passkey with
  * user verification, resident keys and the PRF extension unless `prf` is false. It counts the
  * ceremonies: passkeys created and assertions made (each one is a passkey prompt for a real user).
  */

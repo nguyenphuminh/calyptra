@@ -5,8 +5,8 @@ import { EyeIcon } from '../../shared/icons.tsx';
 import { Copy, ErrorNote, useLoad } from '../../shared/ui.tsx';
 
 /**
- * The account balance (the account's public funds, BRD 2.2.14.4), laid out like the private balance but
- * quieter. Dollars first; the MON shown here pays the network fees of adding money (§11.6).
+ * The account balance (the account's public funds), laid out like the private balance but
+ * quieter. Dollars first; the MON shown here pays the network fees of adding money.
  */
 export function PublicCard() {
   const { calyptra, version } = useApp();

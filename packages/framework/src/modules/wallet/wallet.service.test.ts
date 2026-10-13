@@ -168,7 +168,7 @@ describe('WalletService', () => {
   });
 });
 
-describe('WalletService with a passkey (§11.4)', () => {
+describe('WalletService with a passkey', () => {
   const prf = new Uint8Array(32).fill(7);
 
   it('derives the vault key from the PRF output with HKDF-SHA256', () => {

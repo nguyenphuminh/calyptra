@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {FINALIZE, IVerifier, RECLAIM, SUBMIT_STATE, TRANSFER} from "../src/Shared.sol";
 import {CalyptraTest} from "./utils/CalyptraTest.sol";
 
-/// all-ref §4.10.3, against the verifier generated from the circuits' verifying keys.
+/// Real proofs against the verifier generated from the circuits' verifying keys.
 contract VerifierTest is CalyptraTest {
     IVerifier internal verifier;
     string internal poolJson;

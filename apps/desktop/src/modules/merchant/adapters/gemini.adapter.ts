@@ -1,6 +1,6 @@
 import { AppError, isAppError } from '@calyptra/framework';
 
-/** Google Gemini's OpenAI-compatible chat endpoint (§11.5). */
+/** Google Gemini's OpenAI-compatible chat endpoint. */
 export const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
 
 export interface GeminiModel {

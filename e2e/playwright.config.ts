@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 import './ui/port.ts';
 
-// UI tier (all-ref §10.4): one dev chain, one deployment, one relayer, so one worker, one test at a time.
+// UI tier: one dev chain, one deployment, one relayer, so one worker, one test at a time.
 export default defineConfig({
   testDir: './ui',
   testMatch: '**/*.spec.ts',

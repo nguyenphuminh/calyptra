@@ -204,7 +204,7 @@ describe('proof', () => {
   });
 });
 
-// §3.17: test vectors computed with the Calyptra domains (also the oracles of the Foundry tests).
+// Test vectors computed with the Calyptra domains (also the oracles of the Foundry tests).
 describe('test vectors', () => {
   const ot = ownerTagOf(123n);
   const cm = noteCommitment({ amount: 100n, token: 0n, ownerTag: ot, salt: 456n });

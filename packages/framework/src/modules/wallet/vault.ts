@@ -11,7 +11,7 @@ export interface KdfParams { N: number; r: number; p: number }
 /** scrypt cost for real wallets (tests pass a cheaper one). */
 export const DEFAULT_KDF: KdfParams = { N: 2 ** 17, r: 8, p: 1 };
 
-/** Opens a vault: a password (scrypt), or the raw 32-byte vault key of a passkey wallet (§11.4). */
+/** Opens a vault: a password (scrypt), or the raw 32-byte vault key of a passkey wallet. */
 export type VaultSecret = string | Uint8Array;
 
 /** The key that seals the wallet document; kept in memory only, while unlocked. */
@@ -23,7 +23,7 @@ const VAULT_KEY_SIZE = 32;
 
 const random = (size: number): Uint8Array => crypto.getRandomValues(new Uint8Array(size));
 
-/** The vault key of a passkey wallet: HKDF-SHA256 over the passkey's PRF output (§11.4). */
+/** The vault key of a passkey wallet: HKDF-SHA256 over the passkey's PRF output. */
 export function passkeyVaultKey(prfOutput: Uint8Array): Uint8Array {
   return hkdf(sha256, prfOutput, utf8ToBytes('calyptra'), utf8ToBytes('calyptra/vault/v1'), VAULT_KEY_SIZE);
 }

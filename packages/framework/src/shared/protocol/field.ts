@@ -3,7 +3,7 @@ import { bytesToHex, hexToBigInt, type Hex } from 'viem';
 /** Order of the BN254 scalar field: every value inside a proof lives below it. */
 export const FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 
-/** Amounts are 64-bit inside the proofs (BRD 2.2.3: every amount is between 0 and 2^64). */
+/** Amounts are 64-bit inside the proofs (every amount is between 0 and 2^64). */
 export const AMOUNT_BITS = 64n;
 export const MAX_AMOUNT = (1n << AMOUNT_BITS) - 1n;
 

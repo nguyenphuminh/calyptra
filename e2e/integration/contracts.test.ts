@@ -1,4 +1,4 @@
-// The contracts on a local chain with real proofs (all-ref §4.11, §10.7.10): freshly deployed contracts
+// The contracts on a local chain with real proofs: freshly deployed contracts
 // with the short-window Disputes build, a 15-second channel window, and accounts relayer / Alice / Bob.
 // Every receipt's gasUsed is recorded under a label and written to <DEVNODE_DIR>/gas-report.json.
 // Each test depends on the previous one.

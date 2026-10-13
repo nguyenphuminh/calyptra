@@ -1,7 +1,7 @@
-// The real desktop client as child processes (all-ref §10.7.8): init and the encrypted data folder,
+// The real desktop client as child processes: init and the encrypted data folder,
 // the local RPC and its token, the relayer and libp2p relay roles serving a website-style framework
 // user, the relayer account's limits, and export/import in both directions (INT-D1..D6). Then the
-// startup refusals of merchant mode (§11.5): it always sells the Gemini chat, so only its error paths
+// startup refusals of merchant mode: it always sells the Gemini chat, so only its error paths
 // run here; the paid service itself is covered with EchoServicePort in subscription.test.ts.
 // Tests run in order and share the data folder.
 import type { ChildProcess } from 'node:child_process';
@@ -204,7 +204,7 @@ describe('desktop client', () => {
     expect(await stopDesktop(desktop)).toBe(0);
   });
 
-  it('own RPC endpoints first, then the network’s history endpoint; with the fallback off, only its own (§11.3)', async () => {
+  it('own RPC endpoints first, then the network’s history endpoint; with the fallback off, only its own', async () => {
     const [own, networkRpc, history] = [await proxy({ mode: 'down' }), await proxy(), await proxy()];
     const file = join(tmp, 'devnode-logs.json');
     await writeFile(file, JSON.stringify({

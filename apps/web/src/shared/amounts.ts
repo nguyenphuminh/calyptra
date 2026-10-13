@@ -6,14 +6,14 @@ export type TokenName = (typeof TOKENS)[number];
 const DECIMALS: Record<TokenName, number> = { native: 18, stablecoin: 6 };
 export const SYMBOL: Record<TokenName, string> = { native: 'MON', stablecoin: 'AUSD' };
 
-/** §11.6 Dollars first: forms list the stablecoin first and start on it (AUSD is the main currency). */
+/** Dollars first: forms list the stablecoin first and start on it (AUSD is the main currency). */
 export const TOKEN_CHOICES: readonly TokenName[] = ['stablecoin', 'native'];
 export const DEFAULT_TOKEN: TokenName = 'stablecoin';
 /** How a token is named on screen: the stablecoin is shown as dollars, the native coin by its symbol. */
 export const DISPLAY_SYMBOL: Record<TokenName, string> = { native: 'MON', stablecoin: '$' };
 export const TOKEN_LABEL: Record<TokenName, string> = { native: 'MON', stablecoin: 'Dollars (AUSD)' };
 
-/** Notes hold 64-bit amounts, so one native-coin deposit holds at most 2^64 - 1 wei, about 18.44 MON (§11.2). */
+/** Notes hold 64-bit amounts, so one native-coin deposit holds at most 2^64 - 1 wei, about 18.44 MON. */
 export const MAX_NOTE_AMOUNT = (1n << 64n) - 1n;
 
 /** The token as the framework numbers it: 0 for the native coin, the network's stablecoin contract otherwise. */
@@ -57,7 +57,7 @@ export function formatDollarsExact(value: bigint): string {
 export const typedAmount = (name: TokenName, text: string): string => (name === 'stablecoin' ? `$${text.trim()}` : `${text.trim()} MON`);
 
 /**
- * An amount as the main screens show it (§11.6): the stablecoin as dollars, the native coin exactly.
+ * An amount as the main screens show it: the stablecoin as dollars, the native coin exactly.
  * The exact amount, as `formatAmount` prints it, belongs in the element's title.
  */
 export const formatMoney = (name: TokenName, value: bigint): string => (name === 'stablecoin' ? formatDollars(value) : formatAmount(name, value));

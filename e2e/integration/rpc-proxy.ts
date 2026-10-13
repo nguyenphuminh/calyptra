@@ -1,4 +1,4 @@
-// A local JSON-RPC proxy in front of the dev chain (all-ref §10.7.7) that records every method it is
+// A local JSON-RPC proxy in front of the dev chain that records every method it is
 // asked (batches included) and can misbehave on demand: be down, claim another chain, drop the
 // connection of eth_getLogs or of receipt queries, refuse log ranges over `maxRange` blocks, or lag
 // `lag` blocks behind the chain head.

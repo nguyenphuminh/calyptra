@@ -5,7 +5,7 @@ include "circomlib/circuits/poseidon.circom";
 include "lib/constants.circom";
 include "lib/note.circom";
 
-// Gives a contributor back a contribution the finalized state did not include (BRD 2.2.10.3).
+// Gives a contributor back a contribution the finalized state did not include.
 // Input 0 is the contribution, unlocked by the secret behind the refund tag in its channel tag;
 // input 1 is an ordinary personal note (or a dummy). The pool checks the channel was finalized.
 template Reclaim(levels) {

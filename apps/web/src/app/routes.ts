@@ -17,7 +17,7 @@ const isSettingsCategory = (value: string): value is SettingsCategory => (SETTIN
 
 /**
  * The screen a hash path shows, first match wins. Tabs (channels) are the start screen, so they are also
- * the default. §11.5 adds the Services routes, merchant links and payment links to a Calyptra ID.
+ * the default. Also the Services routes, merchant links and payment links to a Calyptra ID.
  */
 export function routeOf(path: string): Route {
   if (path.startsWith('/invite/')) return { section: 'channels', view: { kind: 'open', invite: path.slice('/invite/'.length) } };

@@ -5,7 +5,7 @@ include "circomlib/circuits/comparators.circom";
 include "lib/channel.circom";
 include "lib/spend.circom";
 
-// Private transfer, withdrawal, channel funding and cooperative close (BRD 2.2.3, 2.2.5, 2.2.9).
+// Private transfer, withdrawal, channel funding and cooperative close.
 // The token is public only in a withdrawal; a cooperative close needs a final state signed by both keys.
 template Transfer(levels) {
     signal input root;

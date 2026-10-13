@@ -43,10 +43,10 @@ export interface CalyptraOptions {
   onJoined?: ChannelDeps['onJoined'];
   /** After the other side changed a channel (a payment received, an opening confirmed). */
   onChanged?: ChannelDeps['onChanged'];
-  /** Asked before outgoing channel payments, except those a subscription's allowance covers (§11.5);
+  /** Asked before outgoing channel payments, except those a subscription's allowance covers;
    *  without it, outgoing channel payments are signed automatically. */
   confirmPayment?: ChannelDeps['confirmPayment'];
-  /** Merchant mode (§11.5): sell this service by the second on the service protocol. Needs a libp2p relay. */
+  /** Merchant mode: sell this service by the second on the service protocol. Needs a libp2p relay. */
   merchant?: { offer: Offer; service: ServicePort };
   /** Only lowered by tests. */
   kdf?: KdfParams;
@@ -63,9 +63,9 @@ interface Session {
   p2p: P2PService | null;          // null when no libp2p relay is known
   channels: ChannelService | null;
   disputes: DisputeService | null;
-  /** Per-second subscriptions this account pays (§11.5); null without P2P. */
+  /** Per-second subscriptions this account pays; null without P2P. */
   subscriptions: SubscriptionService | null;
-  /** The service this node sells (merchant mode, §11.5); null otherwise. */
+  /** The service this node sells (merchant mode); null otherwise. */
   merchant: MerchantService | null;
   /** Closed when the session ends, so its unfinished work cannot overwrite the next session's data. */
   stores: { close(): void }[];     // PoolRepository, ChannelRepository, SubscriptionRepository
@@ -148,7 +148,7 @@ export class Calyptra {
       const channelStore = new ChannelRepository(wallet, network.id);
       const subscriptionStore = new SubscriptionRepository(wallet, network.id);
       session.stores.push(channelStore, subscriptionStore);
-      // Payments a subscription's allowance covers are signed without asking; the others go to the host (§11.5).
+      // Payments a subscription's allowance covers are signed without asking; the others go to the host.
       const channels: ChannelService = new ChannelService({
         wallet, keys, chain, pool, prover, p2p, repository: channelStore,
         relayer: () => this.relayer(),

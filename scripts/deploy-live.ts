@@ -1,8 +1,8 @@
-// Live deployment from the current commit (Stage 2, §11.10): the website on the CDN at https://calyptra.space
+// Live deployment from the current commit: the website on the CDN at https://calyptra.space
 // and the relay host relay.calyptra.space (desktop client as transaction relayer, libp2p relay, /hyperrpc
 // wallet-sync proxy and, with a Gemini key, the Gemini merchant) behind Caddy. Idempotent.
 //   npm run deploy:live [-- --project <cloud project id>]
-// Needs the product owner's domain, cloud project and credentials (§13.2); never run it without them.
+// Needs the operator's domain, cloud project and credentials.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -18,7 +18,7 @@ import { english, generateMnemonic, privateKeyToAccount } from 'viem/accounts';
 import { desktopRpc, freePort, runDesktop, startDesktop, stopDesktop } from './lib/desktop-process.ts';
 import { sendValueSpaced } from './lib/value-sends.ts';
 
-/** The product owner's domain (§13.2): deferred, ask before deploying. */
+/** The domain the website and the relay host are served from. */
 const DOMAIN = 'calyptra.space';
 const RELAY_HOST = `relay.${DOMAIN}`;
 const RELAYER_URL = `https://${RELAY_HOST}`;
@@ -26,13 +26,13 @@ const NETWORK_ID = 'monad-testnet';
 /** Reference VM: 2 shared vCPU / 2 GB, Debian 12, 20 GB disk, static external IP. */
 const VM = { name: 'calyptra-relay', region: 'us-central1', zone: 'us-central1-a', machine: 'e2-small', tag: 'calyptra-relay' };
 /**
- * The relayer account only pays gas, billed on the declared limit (§11.2): about 0.31 MON per relayed
+ * The relayer account only pays gas, billed on the declared limit: about 0.31 MON per relayed
  * transfer (3.0M gas at ~102 gwei). Relayed calls send no MON, so Monad's 10 MON reserve does not apply.
  * Below 2 MON (about 6 transfers) it is topped up to 5 MON.
  */
 const RELAYER_MIN = parseEther('2');
 const RELAYER_TARGET = parseEther('5');
-/** The cloud CLI (Google Cloud reference implementation); its path can be overridden. */
+/** The cloud CLI (Google Cloud); its path can be overridden. */
 const CLOUD_CLI = process.env.CALYPTRA_CLOUD_CLI ?? 'gcloud';
 
 const REPO = join(import.meta.dirname, '..');
@@ -212,7 +212,7 @@ async function installRelay(project: string, wallet: RelayWallet): Promise<void>
   await mkdir(upload, { recursive: true, mode: 0o700 });
   execFileSync('git', ['archive', '--format=tar.gz', '-o', join(upload, 'release.tgz'), 'HEAD'], { cwd: REPO });
   execFileSync('tar', ['-czf', join(upload, 'node-data.tgz'), '-C', LIVE, 'node']);
-  // Server-side secrets come from the operator's environment and are never committed (§13.2).
+  // Server-side secrets come from the operator's environment and are never committed.
   const secrets = [`CALYPTRA_PASSWORD=${wallet.password}`];
   if (process.env.CALYPTRA_ENVIO_TOKEN) secrets.push(`CALYPTRA_ENVIO_TOKEN=${process.env.CALYPTRA_ENVIO_TOKEN}`);
   else console.log('⚠ CALYPTRA_ENVIO_TOKEN is not set: the relay host will not serve /hyperrpc (wallets fall back to the public RPC)');
@@ -281,7 +281,7 @@ async function waitForRelay(wallet: RelayWallet): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (DOMAIN.startsWith('<')) throw new Error('set DOMAIN in scripts/deploy-live.ts to the product owner\'s domain first (§13.2)');
+  if (DOMAIN.startsWith('<')) throw new Error('set DOMAIN in scripts/deploy-live.ts to your domain first');
   const wallet = await relayWallet();
   checkNetworkConfig(wallet);
   if (execFileSync('git', ['status', '--porcelain'], { cwd: REPO, encoding: 'utf8' }).trim() !== '') {

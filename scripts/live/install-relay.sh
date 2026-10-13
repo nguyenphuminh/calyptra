@@ -16,7 +16,7 @@ NETWORK_ID="$4"
 MERCHANT_OFFER="${5:-}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 RELEASE_ID="$(date -u +%Y%m%dT%H%M%SZ)"
-# Relayer fees (§11.2 defaults; re-tune from measured gas, §13.1 V3).
+# Relayer fees (the defaults; re-tune from measured gas).
 FEE_NATIVE="0.35"
 FEE_STABLECOIN="0.01"
 

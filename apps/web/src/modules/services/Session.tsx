@@ -9,7 +9,7 @@ import { clockText, merchantsOf, paidSeconds } from './merchants.ts';
 
 interface Line { id: string; from: 'you' | 'service'; text: string; done: boolean }
 
-/** Why the service stopped, as the session's banner says it (§11.5 banners). */
+/** Why the service stopped, as the session's banner says it. */
 function stopBanner(reason: StopReason): string | null {
   if (reason === 'timeout' || reason === 'disconnected') return 'Service unreachable';
   if (reason === 'error') return "Payment didn't go through, the service paused";
@@ -17,7 +17,7 @@ function stopBanner(reason: StopReason): string | null {
   return null;
 }
 
-/** One subscription in use: the chat, a live meter, Pause / Resume / End (§11.5). */
+/** One subscription in use: the chat, a live meter, Pause / Resume / End. */
 export function Session({ subscription }: { subscription: Subscription }) {
   const { calyptra, refresh } = useApp();
   const subscriptions = calyptra.subscriptions;

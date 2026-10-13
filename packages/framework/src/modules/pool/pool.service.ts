@@ -213,7 +213,7 @@ export class PoolService {
 
   /** Adds money from the account's public address (the only pool operation it pays for itself). */
   async deposit(token: bigint, amount: bigint, accountId?: string): Promise<Hex> {
-    // Notes hold 64-bit amounts: at most 2^64 - 1 wei of the native coin (§11.2).
+    // Notes hold 64-bit amounts: at most 2^64 - 1 wei of the native coin.
     if (token === 0n && amount > MAX_AMOUNT) throw new AppError(400, 'AMOUNT_TOO_LARGE', 'The most you can add at once is 18.44 MON');
     const { wallet, keys: keyring, chain } = this.deps;
     const account = accountId ?? wallet.activeAccount().id;

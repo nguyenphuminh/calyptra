@@ -2,7 +2,7 @@ import type { OpenRequest } from '@calyptra/framework';
 
 /**
  * Questions the framework asks the user while it works: confirming an outgoing channel payment
- * (BRD 2.2.8) and approving a channel that asks for the user's money (BRD 2.2.7, 2.2.14.9). The dialog
+ * and approving a channel that asks for the user's money. The dialog
  * shows one at a time; a channel request can also be answered from the channel list.
  */
 export type Prompt =

@@ -1,7 +1,7 @@
 import { decodeMerchantCard, type Calyptra, type MerchantCard, type Subscription } from '@calyptra/framework';
 import { z } from 'zod';
 
-// Merchants the Services tab lists (§11.5): the network's own (its config's `merchants`), then those the
+// Merchants the Services tab lists: the network's own (its config's `merchants`), then those the
 // user opened through a merchant link, kept in the encrypted wallet per account and network.
 const SECTION = 'web-merchants';
 const SavedSchema = z.array(z.string());

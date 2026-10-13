@@ -1,4 +1,4 @@
-// Test money for the live tier (all-ref §9.22, §10.5, §10 Porting notes): a funder key outside the
+// Test money for the live tier: a funder key outside the
 // repository pays the test wallets on Monad testnet, one transaction at a time, and gets back what a run
 // leaves in their accounts. Monad bills the declared gas limit, so funding and sweeping price gas on the
 // limit. MON goes out through sendValueSpaced (scripts/lib/value-sends.ts): a send that leaves the sender
@@ -27,7 +27,7 @@ const chain = defineChain({
 });
 export const client = createPublicClient({ chain, transport: http(network.rpcUrl) });
 
-/** The AUSD faucet contract (§11.2): `requestFunds(address)` pays testnet AUSD. */
+/** The AUSD faucet contract: `requestFunds(address)` pays testnet AUSD. */
 const AUSD_FAUCET: Address = '0xd236c18D274E54FAccC3dd9DDA4b27965a73ee6C';
 
 const ERC20_ABI = [
@@ -78,7 +78,7 @@ export async function fund(to: Address, native: string, stable?: string): Promis
   });
 }
 
-/** Tops the funder up from the AUSD faucet (§11.2; confirm on the first run that it really pays out). */
+/** Tops the funder up from the AUSD faucet. */
 export async function faucetStablecoin(): Promise<void> {
   const wallet = funderWallet();
   await serial(async () => {

@@ -6,7 +6,7 @@ import {Hasher} from "../src/Hasher.sol";
 import {InvalidField, Shared, TreeFull} from "../src/Shared.sol";
 import {TreeOracle} from "./utils/TreeOracle.sol";
 
-/// all-ref §4.10.4 plus the §11.2 cross-check of the Solidity Poseidon against circomlibjs.
+/// The hasher, plus a cross-check of the Solidity Poseidon against circomlibjs.
 contract HasherTest is Test {
     uint256 internal constant R = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
@@ -71,7 +71,7 @@ contract HasherTest is Test {
         _check(0, R - 1, 18408546291162903352980960740361656607192922946056016208256932944581138225340);
         _check(R - 1, 0, 12398508882227933492673204572813459761914093043589189755216261111298919601208);
         _check((1 << 224) - 1, 12345, 9242397970897135165006066892283518284255125361645188888775051693537314883957);
-        // Native deposit of 5 with inner 1: Poseidon2(5, 1) (all-ref §4.2.2).
+        // Native deposit of 5 with inner 1: Poseidon2(5, 1).
         _check(5, 1, 18816500215088851864087434109260149332202299045149106498974725137014314419960);
     }
 

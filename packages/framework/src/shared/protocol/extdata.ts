@@ -1,7 +1,7 @@
 import { encodeAbiParameters, keccak256, zeroAddress, type Address, type Hex } from 'viem';
 import { toField } from './field.ts';
 
-/** Number of outputs of every pool transfer: two regular outputs and the relayer's fee note (BRD 2.2.3). */
+/** Number of outputs of every pool transfer: two regular outputs and the relayer's fee note. */
 export const OUTPUTS_PER_TRANSFER = 3;
 
 /** Data the proof commits to but the circuit does not read: the withdrawal recipient and the encrypted outputs. */

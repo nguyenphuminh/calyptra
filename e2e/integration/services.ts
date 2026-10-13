@@ -1,4 +1,4 @@
-// Framework services as a host app builds them (all-ref §10.3.2): users with an in-memory wallet, a
+// Framework services as a host app builds them: users with an in-memory wallet, a
 // pool service and real proofs; in-process relayers; channel nodes reachable through a local libp2p
 // relay; and whole `Calyptra` nodes (the facade the website and the desktop client build on).
 import { parseAbi, parseEther, zeroAddress, type Address } from 'viem';
@@ -140,7 +140,7 @@ export async function newCalyptra(
   return node;
 }
 
-/** `code(p)` of §10.7: the code a rejection carries (or its text); throws if `p` resolves. */
+/** `code(p)`: the code a rejection carries (or its text); throws if `p` resolves. */
 export async function code(p: Promise<unknown>): Promise<string> {
   try {
     await p;

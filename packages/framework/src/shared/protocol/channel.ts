@@ -3,7 +3,7 @@ import { hash2, hash3, hash6, hash10 } from './poseidon.ts';
 
 export type PublicKey = readonly [bigint, bigint];
 
-/** Channel parameters agreed off-chain (BRD 2.2.7). */
+/** Channel parameters agreed off-chain. */
 export interface ChannelParams {
   pkA: PublicKey;
   pkB: PublicKey;
@@ -12,7 +12,7 @@ export interface ChannelParams {
   window: bigint;
 }
 
-/** A channel state as both parties sign it (BRD 2.2.7 "Channel state"). Unused contribution slots are 0. */
+/** A channel state as both parties sign it. Unused contribution slots are 0. */
 export interface ChannelState {
   contribs: readonly [bigint, bigint];
   balA: bigint;

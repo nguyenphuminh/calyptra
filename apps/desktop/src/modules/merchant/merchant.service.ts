@@ -2,7 +2,7 @@ import { encodeInvite, encodeMerchantCard, shieldedAddressOf } from '@calyptra/f
 import type { Calyptra, Offer } from '@calyptra/framework';
 
 /**
- * Merchant mode of the desktop node (§11.5). The facade sells the offer on every session it starts
+ * Merchant mode of the desktop node. The facade sells the offer on every session it starts
  * (CalyptraOptions.merchant); this service hands out the merchant card that subscribers open.
  */
 export class MerchantCardService {

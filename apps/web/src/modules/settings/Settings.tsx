@@ -11,7 +11,7 @@ import { Accounts, NetworkSelect } from '../wallet/index.ts';
 
 export type SettingsCategory = 'accounts' | 'backup' | 'network' | 'appearance';
 
-/** The categories; "network" keeps its route and holds the advanced settings (§11.6: network, RPC, relays). */
+/** The categories; "network" keeps its route and holds the advanced settings (network, RPC, relays). */
 const CATEGORIES: { id: SettingsCategory; title: string; description: string; icon: ReactNode }[] = [
   { id: 'accounts', title: 'Accounts', description: 'Switch, add or import accounts', icon: <KeyIcon /> },
   { id: 'backup', title: 'Backup', description: 'Export everything, or restore a file', icon: <ShieldIcon /> },
@@ -126,7 +126,7 @@ function Export() {
   );
 }
 
-/** §11.4: a passkey wallet can show its recovery phrase; any wallet can be replaced by importing one. */
+/** A passkey wallet can show its recovery phrase; any wallet can be replaced by importing one. */
 function RecoveryPhrase({ onReady }: { onReady: () => Promise<void> }) {
   const { calyptra } = useApp();
   const method = useLoad(() => calyptra.wallet.unlockMethod(), 'method');

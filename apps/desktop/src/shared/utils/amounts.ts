@@ -6,7 +6,7 @@ import { formatUnits, parseUnits } from 'viem';
 export const TOKEN_NAMES = ['native', 'stablecoin'] as const;
 export type TokenName = (typeof TOKEN_NAMES)[number];
 
-/** AUSD, the stablecoin on Monad, has 6 decimals (checked on chain, §11.2). */
+/** AUSD, the stablecoin on Monad, has 6 decimals (checked on chain). */
 const DECIMALS: Record<TokenName, number> = { native: 18, stablecoin: 6 };
 const SYMBOL: Record<TokenName, string> = { native: 'MON', stablecoin: 'AUSD' };
 

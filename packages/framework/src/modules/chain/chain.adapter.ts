@@ -12,7 +12,7 @@ export interface CommitmentEvent { commitment: bigint; leafIndex: number; cipher
 export interface Dispute { pending: boolean; nonce: bigint; stateHash: bigint; deadline: bigint }
 
 /** Event scans on the RPC endpoints ask for this many blocks at a time: Monad's public RPCs refuse
- *  eth_getLogs over 100 blocks (§11.2, §11.3). Halving stops once the window is <= the minimum. */
+ *  eth_getLogs over 100 blocks. Halving stops once the window is <= the minimum. */
 const LOG_WINDOW = 100n;
 const MIN_LOG_WINDOW = 100n;
 /** Event scans on the network's history endpoints (`logRpcUrls`, Envio HyperRPC) start much larger and halve on refusal. */
@@ -346,7 +346,7 @@ export class ChainAdapter {
         }));
       }
     }
-    // A native deposit needs the coin sent plus the fee budget (the declared limit; §5 porting notes).
+    // A native deposit needs the coin sent plus the fee budget (the declared limit).
     // The fees checked are the fees sent. A stablecoin deposit sends no MON: Monad's reserve never applies.
     let fees: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint } | undefined;
     if (token === 0n) {

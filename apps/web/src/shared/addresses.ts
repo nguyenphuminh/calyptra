@@ -1,5 +1,5 @@
-// What each kind of address is for, said the same way wherever it is shown (BRD 2.2.0, 2.2.14.4).
-// Consumer wording (§11.6): the shielded address is the "Calyptra ID", the public address the
+// What each kind of address is for, said the same way wherever it is shown.
+// Consumer wording: the shielded address is the "Calyptra ID", the public address the
 // account address; no blockchain is named, and MON is mentioned only for network fees.
 
 export const SHIELDED_ADDRESS_TEXT = 'Your Calyptra ID. Share it to get paid privately: nobody else can see payments to it.';
