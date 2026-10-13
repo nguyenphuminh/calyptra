@@ -1,4 +1,4 @@
-export { PoolService, selectInputs } from './pool.service.ts';
+export { PoolService, afterMerges, selectInputs } from './pool.service.ts';
 export type { NoteSecret, PoolDeps, SpendArgs, SpendableNote } from './pool.service.ts';
 export { PoolRepository } from './pool.repository.ts';
 export type { StoredNote } from './pool.schema.ts';

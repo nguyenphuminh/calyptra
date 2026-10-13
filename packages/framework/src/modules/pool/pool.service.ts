@@ -59,6 +59,25 @@ export function selectInputs(notes: readonly SpendableNote[], need: bigint): Spe
   return best ?? 'fragmented';
 }
 
+const largestFirst = (a: bigint, b: bigint): number => (a > b ? -1 : a < b ? 1 : 0);
+
+/**
+ * What merging the two largest notes again and again (each merge pays `fee`, at most `limit` times)
+ * leads to, worked out before any merge is sent: two notes that cover `need`, too little money once the
+ * merge fees are paid, or still too many notes.
+ */
+export function afterMerges(amounts: readonly bigint[], need: bigint, fee: bigint, limit: number): 'covered' | 'insufficient' | 'fragmented' {
+  let left = [...amounts].sort(largestFirst);
+  for (let merges = 0; merges < limit; merges++) {
+    const [a = 0n, b = 0n] = left;
+    if (left.length < 2 || a + b <= fee) return 'fragmented';
+    left = [a + b - fee, ...left.slice(2)].sort(largestFirst);
+    if (left.reduce((sum, x) => sum + x, 0n) < need) return 'insufficient';
+    if ((left[0] ?? 0n) + (left[1] ?? 0n) >= need) return 'covered';
+  }
+  return 'fragmented';
+}
+
 /**
  * The shielded-pool client: mirrors the pool's commitment tree and nullifier set (in memory, per session),
  * discovers the account's notes by trial decryption, and builds, proves and relays deposits, private
@@ -241,7 +260,14 @@ export class PoolService {
     const relayerAddress = decodeShieldedAddress(info.shieldedAddress);
     const need = (payment?.note.amount ?? 0n) + publicAmount + fee;
 
-    let inputs = selectInputs(await this.spendable(token, accountId), need);
+    const notes = await this.spendable(token, accountId);
+    let inputs = selectInputs(notes, need);
+    if (inputs === 'fragmented') {
+      // Each merge pays the relayer from these notes: none is sent unless the merges leave enough.
+      const merged = afterMerges(notes.map((n) => n.amount), need, fee, MAX_MERGES);
+      if (merged === 'insufficient') inputs = merged;
+      else if (merged === 'fragmented') throw fragmented();
+    }
     for (let merges = 0; inputs === 'fragmented'; merges++) {
       if (merges === MAX_MERGES) throw fragmented();
       await this.mergeTwoLargest(token, fee, relayer, keys, accountId);

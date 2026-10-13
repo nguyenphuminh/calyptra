@@ -5,7 +5,7 @@ import { BUILT_IN_NETWORKS, ChainAdapter } from '../chain/index.ts';
 import { KeyRing } from '../keys/index.ts';
 import { MemoryStore } from '../storage/index.ts';
 import { WalletRepository, WalletService } from '../wallet/index.ts';
-import { NATIVE_PRESETS, PoolRepository, PoolService, STABLECOIN_PRESETS, isRoundAmount, selectInputs, type SpendableNote } from './index.ts';
+import { NATIVE_PRESETS, PoolRepository, PoolService, STABLECOIN_PRESETS, afterMerges, isRoundAmount, selectInputs, type SpendableNote } from './index.ts';
 
 const notes = (...amounts: number[]): SpendableNote[] =>
   amounts.map((amount, i) => ({
@@ -28,6 +28,20 @@ describe('selectInputs', () => {
   it('reports insufficient funds', () => {
     expect(selectInputs(notes(40, 50), 100n)).toBe('insufficient');
     expect(selectInputs([], 1n)).toBe('insufficient');
+  });
+});
+
+describe('afterMerges', () => {
+  it('covers the amount when merging the largest notes leaves enough after their fees', () => {
+    expect(afterMerges([40n, 40n, 40n], 100n, 1n, 20)).toBe('covered'); // 79 + 40
+  });
+  it('reports too little before any merge is sent when the merge fees eat into the amount', () => {
+    expect(afterMerges([40n, 40n, 40n], 120n, 1n, 20)).toBe('insufficient'); // 119 left after one merge
+  });
+  it('reports notes still too many within the merge limit', () => {
+    const tens = [10n, 10n, 10n, 10n, 10n, 10n];
+    expect(afterMerges(tens, 50n, 1n, 3)).toBe('fragmented');
+    expect(afterMerges(tens, 50n, 1n, 4)).toBe('covered'); // 49 + 10 after four merges
   });
 });
 

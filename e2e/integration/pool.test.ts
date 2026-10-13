@@ -70,6 +70,12 @@ describe('deposit, private transfer, withdraw', () => {
     for (let i = 0; i < 3; i++) await carol.pool.deposit(NATIVE, mon('0.01'));
     await carol.pool.transfer(await addressOf(bob), NATIVE, mon('0.025'), relayer.port);
     expect(balance(carol, NATIVE)).toBe(mon('0.005') - 2n * FEE); // one merge transfer, then the payment
+
+    // Merging pays a fee each time: a payment the merges would leave too little for sends nothing.
+    const erin = await newUser(network, chain);
+    for (let i = 0; i < 3; i++) await erin.pool.deposit(NATIVE, mon('0.01'));
+    await expect(erin.pool.transfer(await addressOf(bob), NATIVE, mon('0.03') - FEE, relayer.port)).rejects.toMatchObject({ code: 'INSUFFICIENT_FUNDS' });
+    expect(balance(erin, NATIVE)).toBe(mon('0.03'));
   });
 
   it('INT-P5: runs concurrent spends one at a time (the one note is never picked twice)', async () => {
