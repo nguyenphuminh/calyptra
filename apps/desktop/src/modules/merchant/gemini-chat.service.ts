@@ -1,9 +1,10 @@
 import type { ServicePort } from '@calyptra/framework';
 import type { ChatMessage, GeminiAdapter } from './adapters/gemini.adapter.ts';
 
-/** A short system prompt for the demo merchant's chat. */
+/** A short system prompt for the demo merchant's chat. The wallet shows replies as plain text, so no Markdown. */
 export const SYSTEM_PROMPT =
-  'You are Calyptra AI, a helpful assistant powered by Gemini. The user pays for this chat by the second, so answer clearly and concisely.';
+  'You are Calyptra AI, a helpful assistant powered by Gemini. The user pays for this chat by the second, so answer clearly and concisely. ' +
+  'Reply in plain text for a small phone chat: no Markdown and no formatting symbols such as # or *.';
 /** Earlier messages sent along with a prompt (the newest ones), so long sessions stay within the model's context. */
 export const MAX_HISTORY = 20;
 
