@@ -485,14 +485,16 @@ export class ChannelService {
 
   // ---------------------------------------------------------------- proposals
 
-  /** Proposes the state `build` makes on top of the latest one, resending an unanswered proposal of ours first. */
-  private async propose(id: string, build: (r: ChannelRecord) => ChannelState, account: string): Promise<ChannelRecord> {
+  /** Proposes the state `build` makes on top of the latest one, resending an unanswered proposal of ours first
+   *  (without `build`, only that resend). */
+  private async propose(id: string, build: ((r: ChannelRecord) => ChannelState) | null, account: string): Promise<ChannelRecord> {
     let target: { hash: bigint; nonce: bigint } | null = null;
     for (let attempt = 0; attempt < PROPOSE_ATTEMPTS; ) {
       const step = await this.update(id, async (r) => {
         if (target && holdsState(r, target.hash, target.nonce)) return null; // our proposal is signed by both: done
         if (r.pending && r.pending.prevHash !== hashOf(r, r.latest.state)) r.pending = null; // superseded
         if (!r.pending) {
+          if (!build) return null; // nothing of ours waits for an answer
           if (r.status === 'funding') await this.refreshLive(r);
           if (r.status !== 'live') throw new AppError(409, 'NOT_LIVE', 'The channel is not live');
           const state = build(r);
@@ -554,6 +556,9 @@ export class ChannelService {
       // Rival proposals on the same state.
       const mine = { nonce: r.pending.state.nonce, proposer: publicKeyOf(r, me) };
       if (winsTieBreak(mine, { nonce: m.state.nonce, proposer: publicKeyOf(r, peer) })) {
+        // The peer now waits for our proposal to countersign it, but the request that carried it may have
+        // failed (our pay already gave up): send it again (it queues behind the channel lock this handler holds).
+        void this.propose(r.id, null, account).catch(() => undefined);
         throw new AppError(409, 'CONFLICT', 'A rival proposal on the same state wins the tie-break');
       }
       r.pending = null; // ours loses: countersign theirs; our payment is proposed again on top of it

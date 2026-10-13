@@ -2,7 +2,7 @@
 // signatures but an in-memory pool, chain, relayer and P2P link (proofs are not computed).
 import { zeroAddress } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { z } from 'zod';
 import { AppError, isAppError } from '../../shared/errors/AppError.ts';
 import type { ProverPort } from '../../shared/integrations/prover.ts';
@@ -203,6 +203,21 @@ type Node = Awaited<ReturnType<typeof node>>;
 
 const codes = (problems: TickProblem[]) => problems.map((p) => (isAppError(p.error) ? p.error.code : String(p.error)));
 
+/** Runs `run` with every nonce step set to `step` (1 to 2^32), which decides a tie-break. */
+async function withNonceStep<T>(step: number, run: () => Promise<T>): Promise<T> {
+  const original = crypto.getRandomValues.bind(crypto);
+  const spy = vi.spyOn(crypto, 'getRandomValues').mockImplementation(<A extends Exclude<BufferSource, ArrayBuffer>>(array: A): A => {
+    if (array instanceof Uint32Array && array.length === 1) array[0] = step - 1; // nonceStep() returns it + 1
+    else original(array);
+    return array;
+  });
+  try {
+    return await run();
+  } finally {
+    spy.mockRestore();
+  }
+}
+
 /** Alice opens to Bob (who approves everything) and both tick until the channel is live. */
 async function openLive(amount = 100n, peerAmount = 50n, window = 600n) {
   const w = world();
@@ -295,6 +310,18 @@ describe('ChannelService between two nodes', () => {
     await t.alice.channels.pay(t.id, 7n);
     expect(sameLatest(t)).toMatchObject({ balB: 62n });
     expect(t.alice.channels.get(t.id).pending).toBeNull();
+  });
+
+  it('lets the other side pay when its proposal loses to our unanswered one: ours is re-sent at once', async () => {
+    const t = await live();
+    t.bob.wallet.locked = true;
+    await expect(withNonceStep(2 ** 32, () => t.alice.channels.pay(t.id, 5n))).rejects.toMatchObject({ code: 'WALLET_LOCKED' });
+    t.bob.wallet.locked = false;
+    // Bob pays before Alice pays again; his proposal builds on the same state and loses the tie-break.
+    await withNonceStep(1, () => t.bob.channels.pay(t.id, 2n));
+    expect(sameLatest(t)).toMatchObject({ balA: 87n, balB: 53n });
+    expect(t.alice.channels.get(t.id).pending).toBeNull();
+    expect(t.bob.channels.get(t.id).pending).toBeNull();
   });
 
   it('closes cooperatively with one transfer; the other side sees it on its tick', async () => {
