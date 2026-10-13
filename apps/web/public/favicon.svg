@@ -1,17 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <style>
-    .disc { fill: #0b0b0d; }
-    @media (prefers-color-scheme: dark) { .disc { fill: #f5f5f7; } }
+    .s0 { stop-color: #2fb2ee; } .s1 { stop-color: #6f7ff5; } .s2 { stop-color: #8b5cf6; } .s3 { stop-color: #ec6fa8; } .coin { fill-opacity: 0.5; }
+    @media (prefers-color-scheme: dark) {
+      .s0 { stop-color: #5ec8f7; } .s1 { stop-color: #8b9cf9; } .s2 { stop-color: #a78bfa; } .s3 { stop-color: #f49ac2; } .coin { fill-opacity: 0.7; }
+    }
   </style>
   <defs>
-    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#a5b4fc" />
-      <stop offset="1" stop-color="#c4b5fd" />
+    <linearGradient id="holo" x1="0.1" y1="0.1" x2="0.9" y2="0.95">
+      <stop offset="0" class="s0" />
+      <stop offset="0.35" class="s1" />
+      <stop offset="0.62" class="s2" />
+      <stop offset="1" class="s3" />
     </linearGradient>
-    <clipPath id="hem">
-      <path d="M0 67V43c9-6 20-8.5 32-8.5S55 37 64 43v24z" />
-    </clipPath>
   </defs>
-  <circle cx="32" cy="38" r="20" class="disc" clip-path="url(#hem)" />
-  <path d="M8 40C8 22 18 9 32 3c14 6 24 19 24 37-8-5.5-15.5-8-24-8.5S16 34.5 8 40z" fill="url(#glow)" />
+  <circle cx="32" cy="32" r="13" fill="url(#holo)" class="coin" />
+  <path d="M53.25 26.31A22 22 0 1 1 37.69 10.75" fill="none" stroke="url(#holo)" stroke-width="10" stroke-linecap="round" />
 </svg>

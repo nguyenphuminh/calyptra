@@ -38,25 +38,23 @@ export const PlayIcon = () => <Icon><path d="M7 5v14l11-7z" /></Icon>;
 export const ActivityIcon = () => <Icon><path d="M3 12h4l3 7 4-14 3 7h4" /></Icon>;
 
 /**
- * The brand mark: a capsule under its calyptra, the veil-like cap that covers a moss capsule (the
- * product's name, Greek for "veil"). The cap is the lavender gradient; the capsule is the text colour,
- * so it reads near-black in the light theme and near-white in the dark one. A thin gap follows the
- * hem of the cap, so the two shapes stay distinct at favicon sizes.
+ * The brand mark: a "C" drawn as a 300° arc with round caps (open at the top right) around a soft coin.
+ * Both use one holographic gradient, sky to violet to pink, whose stops come from the theme (--logo-0…3
+ * in styles.css): deeper on light backgrounds, pastel on dark ones. public/favicon.svg is the same mark.
  */
 export function Logo({ size = 32 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo">
       <defs>
-        <linearGradient id="calyptra-glow" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#a5b4fc" />
-          <stop offset="1" stopColor="#c4b5fd" />
+        <linearGradient id="calyptra-holo" x1="0.1" y1="0.1" x2="0.9" y2="0.95">
+          <stop offset="0" style={{ stopColor: 'var(--logo-0, #5ec8f7)' }} />
+          <stop offset="0.35" style={{ stopColor: 'var(--logo-1, #8b9cf9)' }} />
+          <stop offset="0.62" style={{ stopColor: 'var(--logo-2, #a78bfa)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--logo-3, #f49ac2)' }} />
         </linearGradient>
-        <clipPath id="calyptra-hem">
-          <path d="M0 67V43c9-6 20-8.5 32-8.5S55 37 64 43v24z" />
-        </clipPath>
       </defs>
-      <circle cx="32" cy="38" r="20" className="logo-disc" clipPath="url(#calyptra-hem)" />
-      <path d="M8 40C8 22 18 9 32 3c14 6 24 19 24 37-8-5.5-15.5-8-24-8.5S16 34.5 8 40z" fill="url(#calyptra-glow)" />
+      <circle cx="32" cy="32" r="13" fill="url(#calyptra-holo)" style={{ fillOpacity: 'var(--logo-coin, 0.7)' }} />
+      <path d="M53.25 26.31A22 22 0 1 1 37.69 10.75" fill="none" stroke="url(#calyptra-holo)" strokeWidth="10" strokeLinecap="round" />
     </svg>
   );
 }
