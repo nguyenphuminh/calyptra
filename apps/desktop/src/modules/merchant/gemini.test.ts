@@ -2,13 +2,13 @@ import { createServer } from 'node:http';
 import type { IncomingHttpHeaders, Server, ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { GEMINI_ENDPOINT, GEMINI_MAX_TOKENS, GEMINI_MODEL, GEMINI_REASONING_EFFORT, GeminiAdapter } from './adapters/gemini.adapter.ts';
+import { GEMINI_ENDPOINT, GEMINI_FIRST_CHUNK_TIMEOUT_MS, GEMINI_MAX_TOKENS, GEMINI_MODELS, GeminiAdapter } from './adapters/gemini.adapter.ts';
 import { SYSTEM_PROMPT, GeminiChatService } from './gemini-chat.service.ts';
 
 /** A stand-in for Gemini's OpenAI-compatible endpoint: records requests, streams a scripted reply. */
 interface Seen {
   headers: IncomingHttpHeaders;
-  body: { model: string; stream: boolean; max_tokens: number; reasoning_effort: string; messages: { role: string; content: string }[] };
+  body: { model: string; stream: boolean; max_tokens: number; reasoning_effort?: string; messages: { role: string; content: string }[] };
 }
 const seen: Seen[] = [];
 let reply: (res: ServerResponse) => void;
@@ -47,14 +47,18 @@ const collect = async (pieces: AsyncIterable<string>): Promise<string[]> => {
 };
 
 describe('GeminiAdapter', () => {
-  it('targets the OpenAI-compatible Gemini endpoint with the Gemini model, thinking off', () => {
+  it('targets the OpenAI-compatible Gemini endpoint with Flash-Lite first, then fallbacks with thinking off', () => {
     expect(GEMINI_ENDPOINT).toBe('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
-    expect(GEMINI_MODEL).toBe('gemini-3.5-flash');
+    expect(GEMINI_MODELS).toEqual([
+      { model: 'gemini-flash-lite-latest' },
+      { model: 'gemini-3.1-flash-lite', reasoningEffort: 'none' },
+      { model: 'gemini-3.5-flash', reasoningEffort: 'none' },
+    ]);
     expect(GEMINI_MAX_TOKENS).toBe(800);
-    expect(GEMINI_REASONING_EFFORT).toBe('none');
+    expect(GEMINI_FIRST_CHUNK_TIMEOUT_MS).toBe(8_000);
   });
 
-  it('streams the reply with the key, the model, stream: true, max_tokens 800 and no thinking', async () => {
+  it('streams the reply with the key, the first model, stream: true and max_tokens 800', async () => {
     reply = (res) => {
       res.writeHead(200, { 'content-type': 'text/event-stream' });
       // A role-only first event, a keep-alive comment and an event split across writes.
@@ -70,23 +74,37 @@ describe('GeminiAdapter', () => {
     expect(await collect(gemini.stream(messages))).toEqual(['Hello', ' there']);
     expect(seen).toHaveLength(1);
     expect(seen[0]?.headers.authorization).toBe('Bearer test-key');
-    expect(seen[0]?.body).toEqual({ model: 'gemini-3.5-flash', messages, stream: true, max_tokens: 800, reasoning_effort: 'none' });
+    expect(seen[0]?.body).toEqual({ model: 'gemini-flash-lite-latest', messages, stream: true, max_tokens: 800 });
   });
 
-  it('retries a busy or overloaded answer, then gives up with the last status', async () => {
+  it('moves to the next model when one is busy or overloaded, then gives up with the last status', async () => {
     const statuses = [503, 429];
     reply = (res) => {
       const status = statuses.shift();
       if (status === undefined) return sse(res, ['Back']);
       res.writeHead(status, { 'content-type': 'application/json' }).end('{"error":{"message":"busy"}}');
     };
-    const gemini = new GeminiAdapter({ apiKey: 'k', endpoint, retryDelaysMs: [10, 10] });
+    const gemini = new GeminiAdapter({ apiKey: 'k', endpoint });
     expect(await collect(gemini.stream([{ role: 'user', content: 'hi' }]))).toEqual(['Back']);
-    expect(seen).toHaveLength(3);
+    expect(seen.map((s) => [s.body.model, s.body.reasoning_effort])).toEqual([
+      ['gemini-flash-lite-latest', undefined], ['gemini-3.1-flash-lite', 'none'], ['gemini-3.5-flash', 'none'],
+    ]);
     seen.length = 0;
     reply = (res) => res.writeHead(503).end('busy');
     await expect(collect(gemini.stream([{ role: 'user', content: 'hi' }]))).rejects.toMatchObject({ message: 'The AI service answered with status 503' });
     expect(seen).toHaveLength(3);
+  });
+
+  it('moves to the next model when one has not started its reply in time, but not once words have streamed', async () => {
+    let calls = 0;
+    reply = (res) => {
+      calls += 1;
+      if (calls === 1) return void setTimeout(() => sse(res, ['Late']), 400); // too slow: skipped
+      sse(res, ['Quick']);
+    };
+    const gemini = new GeminiAdapter({ apiKey: 'k', endpoint, firstChunkTimeoutMs: 150 });
+    expect(await collect(gemini.stream([{ role: 'user', content: 'hi' }]))).toEqual(['Quick']);
+    expect(seen.map((s) => s.body.model)).toEqual(['gemini-flash-lite-latest', 'gemini-3.1-flash-lite']);
   });
 
   it('wraps upstream failures without revealing the key', async () => {

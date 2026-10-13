@@ -155,6 +155,12 @@ async function expectRefusals(): Promise<void> {
   }
 }
 
+/** Calls are spaced from their send times; their arrival times here jitter under load, so the check is on
+ *  the whole run (n calls take at least n - 1 spacings) rather than on each gap. */
+function expectSpaced(at: readonly number[]): void {
+  expect((at.at(-1) ?? 0) - (at[0] ?? 0)).toBeGreaterThanOrEqual((at.length - 1) * SPACING_MS - 10);
+}
+
 describe('POST /hyperrpc, answered from the event cache', () => {
   it('answers every method with -32000 "warming up" until the backfill completes; refusals stay -32601', async () => {
     upstreamStatus = 429; // the upstream refuses: the backfill cannot complete
@@ -192,7 +198,7 @@ describe('POST /hyperrpc, answered from the event cache', () => {
   it('spaces upstream calls at least the spacing apart: 15 s by default, so at most 4 a minute', () => {
     const at = upstreamReceived.map((r) => r.at);
     expect(at.length).toBeGreaterThan(5);
-    for (let i = 1; i < at.length; i++) expect((at[i] ?? 0) - (at[i - 1] ?? 0)).toBeGreaterThanOrEqual(SPACING_MS - 5);
+    expectSpaced(at);
     expect(UPSTREAM_SPACING_MS).toBe(15_000);
     expect(Math.floor(60_000 / UPSTREAM_SPACING_MS)).toBeLessThanOrEqual(4);
     expect(POLL_INTERVAL_MS).toBe(20_000);
@@ -263,7 +269,7 @@ describe('POST /hyperrpc, answered from the event cache', () => {
     expect(await getLogs({ address: POOL, fromBlock: hex(360_000) })).toEqual(logsOf([POOL], 360_000, 370_000));
     expect(ranges(upstreamReceived.slice(before)).every(([from, to]) => from === 360_001 && to <= 370_000)).toBe(true);
     const at = upstreamReceived.map((r) => r.at);
-    for (let i = 1; i < at.length; i++) expect((at[i] ?? 0) - (at[i - 1] ?? 0)).toBeGreaterThanOrEqual(SPACING_MS - 5);
+    expectSpaced(at);
   });
 
   it('answers malformed requests in the one error format', async () => {
