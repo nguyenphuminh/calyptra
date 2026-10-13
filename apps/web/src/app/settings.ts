@@ -19,8 +19,16 @@ export function readSettings(calyptra: Calyptra): WebSettings {
 }
 
 export async function writeSettings(calyptra: Calyptra, settings: WebSettings): Promise<void> {
+  const previous = readSettings(calyptra);
   await calyptra.wallet.writeSection(SECTION, settings, ALL_ACCOUNTS);
-  await startNode(calyptra); // settings take effect immediately
+  try {
+    await startNode(calyptra); // settings take effect immediately
+  } catch (err) {
+    // A change the node cannot start with is not kept: saved, it would fail every unlock after it.
+    await calyptra.wallet.writeSection(SECTION, previous, ALL_ACCOUNTS);
+    await startNode(calyptra);
+    throw new Error('Calyptra could not start with this setting, so it was not saved.', { cause: err });
+  }
 }
 
 /** (Re)starts the node with the network's relays and relayers, the user's own first. */

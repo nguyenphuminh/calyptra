@@ -1,7 +1,7 @@
 import { decodeInvite, inviteLink, quotedFee, shieldedAddressOf, type RelayerPort } from '@calyptra/framework';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useApp } from '../../app/context.ts';
-import { DEFAULT_TOKEN, DISPLAY_SYMBOL, formatMoney, parseAmount, tokenId, tokenName, type TokenName } from '../../shared/amounts.ts';
+import { DEFAULT_TOKEN, DISPLAY_SYMBOL, formatMoney, parseAmount, tokenId, tokenName, typedAmount, type TokenName } from '../../shared/amounts.ts';
 import { Avatar, BackIcon, SendIcon } from '../../shared/icons.tsx';
 import { AmountField, Button, closeTo, Copy, ErrorNote, Field, Modal, Money, Notice, Qr, RelayedSubmit, useAction } from '../../shared/ui.tsx';
 import { TokenSelect } from '../public/index.ts';
@@ -123,7 +123,7 @@ export function OpenDialog({ initialInvite }: { initialInvite: string }) {
       </details>
       <RelayedSubmit label="Start a tab" token={token} tokenId={tokenId(token, network)} relayer={() => calyptra.relayer()}
         disabled={!isInvite(invite) || parsed === null || ask === null}
-        details={<>Put <strong>{amount} {symbol}</strong> into a tab{ask ? `, asking the other side for ${askText} ${symbol}` : ''}.</>}
+        details={<>Put <strong>{typedAmount(token, amount)}</strong> into a tab{ask ? `, asking the other side for ${typedAmount(token, askText)}` : ''}.</>}
         run={run}
         onDone={() => { if (pendingId.current) location.hash = `#/channels/${pendingId.current}`; }} />
     </Modal>

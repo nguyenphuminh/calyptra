@@ -339,6 +339,18 @@ describe('ChannelService between two nodes', () => {
     await expect(t.alice.channels.pay(t.id, 1n)).rejects.toMatchObject({ code: 'NOT_LIVE', message: 'The channel is not live' });
   });
 
+  it('settles after a Settle the other side did not answer: the waiting final state is re-sent, not proposed again', async () => {
+    const t = await live();
+    t.bob.wallet.locked = true;
+    await expect(t.alice.channels.close(t.id, t.alice.relayer)).rejects.toMatchObject({ code: 'WALLET_LOCKED' });
+    expect(t.alice.channels.get(t.id).pending?.state.final).toBe(true);
+    t.bob.wallet.locked = false;
+    const closed = await t.alice.channels.close(t.id, t.alice.relayer);
+    expect(closed.status).toBe('closed');
+    expect(closed.latest.state).toMatchObject({ final: true, balA: 90n, balB: 50n });
+    expect(t.alice.relayer.submitted).toEqual(['transact']);
+  });
+
   it('enforces the window bounds, the invitee’s approval and both sides’ funds', async () => {
     const w = world();
     const alice = await node(w, 'alice', 1_000n);

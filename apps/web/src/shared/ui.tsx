@@ -155,9 +155,12 @@ export const closeTo = (hash: string) => () => { location.hash = hash; };
 
 /** A dialog: a sheet on narrow screens, a panel on wide ones. Closed only by its X (when given) or its buttons. */
 export function Modal({ title, children, onClose, wide }: { title: string; children?: ReactNode; onClose?: () => void; wide?: boolean }) {
+  // Keyboard and screen-reader users start inside the dialog, not on the page under it.
+  const dialog = useRef<HTMLDivElement>(null);
+  useEffect(() => { dialog.current?.focus(); }, []);
   return createPortal(
     <div className="backdrop">
-      <div className={wide ? 'modal wide' : 'modal'} role="dialog" aria-modal="true" aria-label={title}>
+      <div ref={dialog} tabIndex={-1} className={wide ? 'modal wide' : 'modal'} role="dialog" aria-modal="true" aria-label={title}>
         <span className="grabber" aria-hidden="true" />
         <div className="modal-head">
           <h2>{title}</h2>

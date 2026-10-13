@@ -303,6 +303,7 @@ button.icon-button { padding: 0; background: transparent; color: inherit; letter
   border: 1px solid var(--line-strong); box-shadow: 0 40px 80px -30px rgb(0 0 0 / 60%); animation: rise 0.25s ease both;
 }
 .modal.wide { max-width: 760px; }
+.modal:focus { outline: none; }
 .receive { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .receive-part { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 18px; border-radius: var(--radius); border: 1px solid var(--line); }
 .receive-part h3 { font-size: 1rem; }

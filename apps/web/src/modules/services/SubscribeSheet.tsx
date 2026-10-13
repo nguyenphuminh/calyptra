@@ -27,7 +27,7 @@ export function SubscribeSheet({ code }: { code: string }) {
   if (!card) {
     return (
       <Modal title="Subscribe" onClose={closeTo('#/services')}>
-        <ErrorNote error="This is not a valid Calyptra merchant link." />
+        <ErrorNote error="This is not a valid Calyptra service link." />
       </Modal>
     );
   }

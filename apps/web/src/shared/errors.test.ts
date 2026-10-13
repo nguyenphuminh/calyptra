@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AppError } from '@calyptra/framework';
+import { BaseError, ContractFunctionRevertedError } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { ERROR_COPY, friendlyError } from './errors.ts';
 
@@ -56,5 +57,13 @@ describe('friendlyError', () => {
     expect(friendlyError(new Error('could not load /artifacts/transfer.wasm'))).toBe('could not load /artifacts/transfer.wasm');
     expect(friendlyError('plain text')).toBe('plain text');
     expect(friendlyError(new Error('Could not build the proof: could not load x'))).toBe('Calyptra could not secure this payment privately. Reload the page and try again.');
+  });
+
+  it('shows only the gist of a raw network error, never its endpoint or transaction data', () => {
+    const noGas = new BaseError('Missing or invalid parameters.', { details: 'Signer had insufficient balance', metaMessages: ['URL: https://rpc.example', 'data: 0x095ea7b3'] });
+    expect(friendlyError(noGas)).toBe('Your account balance does not have enough MON for the network fee.');
+    const reverted = new ContractFunctionRevertedError({ abi: [], functionName: 'deposit', message: 'TransferFailed()' });
+    expect(friendlyError(reverted)).toBe('The network refused this. Try again in a moment.');
+    expect(friendlyError(new AppError(502, 'UPSTREAM_ERROR', 'The AI service answered with status 503'))).toBe('The service is busy or not answering right now. Try again in a moment.');
   });
 });

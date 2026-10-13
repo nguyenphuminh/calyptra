@@ -1,4 +1,4 @@
-import { AppError, decodeInvite, type MerchantMessage, type StopReason, type Subscription } from '@calyptra/framework';
+import { AppError, decodeInvite, MAX_PROMPT_LENGTH, type MerchantMessage, type StopReason, type Subscription } from '@calyptra/framework';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../../app/context.ts';
 import { formatDollars, tokenName } from '../../shared/amounts.ts';
@@ -149,7 +149,8 @@ export function Session({ subscription }: { subscription: Subscription }) {
       <ErrorNote error={start.error ?? pause.error ?? send.error ?? dispute.error} />
       <form className="composer" onSubmit={(e) => { e.preventDefault(); if (text.trim()) void send.perform(text.trim()); }}>
         <div className="composer-field">
-          <input aria-label="Message" placeholder={active ? 'Message' : 'Start the session to chat'} disabled={!active} value={text} onChange={(e) => setText(e.target.value)} />
+          {/* The service refuses longer prompts, and its refusal stops the session. */}
+          <input aria-label="Message" placeholder={active ? 'Message' : 'Start the session to chat'} disabled={!active} maxLength={MAX_PROMPT_LENGTH} value={text} onChange={(e) => setText(e.target.value)} />
         </div>
         <Button type="submit" className="primary round" aria-label="Send message" busy={send.busy} disabled={!active || text.trim() === ''}><SendIcon /></Button>
       </form>

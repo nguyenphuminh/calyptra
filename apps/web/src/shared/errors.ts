@@ -2,8 +2,9 @@
 // pinned by the desktop client and the framework's tests, so they stay as they are; this one table turns
 // each AppError code into the words of the website: private balance, Calyptra ID, tab, network fee,
 // privacy relay, message relay, settle. Plain messages pass through; unknown codes and errors that are
-// not AppErrors keep their own message.
+// not AppErrors keep their own message, except raw network errors (viem's), which say only their gist.
 import { isAppError } from '@calyptra/framework';
+import { BaseError } from 'viem';
 
 /**
  * The copy for a code: one text, or one per framework message (with a fallback under `*`); an empty text
@@ -137,6 +138,8 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
   // Subscriptions (§11.5)
   SUBSCRIPTION_NOT_FOUND: 'This subscription is not in this wallet.',
   SERVICE_ERROR: PASS,
+  // The merchant's own refusal when its upstream service fails (the desktop merchant's AI adapter).
+  UPSTREAM_ERROR: `The service is busy or not answering right now. ${TRY_AGAIN}`,
 };
 
 /**
@@ -145,6 +148,11 @@ export const ERROR_COPY: Readonly<Record<string, Copy | typeof PASS>> = {
  */
 const PROVER_FAILURES = ['Could not build the proof:', 'The prover stopped:'];
 const PROVER_COPY = 'Calyptra could not secure this payment privately. Reload the page and try again.';
+
+/** A raw network error (viem's) names endpoints and transaction data, so only its gist is shown. */
+const NO_MON_FOR_FEES = /insufficient (balance|funds)/i;
+const networkErrorText = (err: BaseError): string =>
+  NO_MON_FOR_FEES.test(err.message) ? 'Your account balance does not have enough MON for the network fee.' : `The network refused this. ${TRY_AGAIN}`;
 
 /** The words the website shows for an error. */
 export function friendlyError(err: unknown): string {
@@ -157,6 +165,7 @@ export function friendlyError(err: unknown): string {
     }
     return err.message;
   }
+  if (err instanceof BaseError) return networkErrorText(err);
   if (err instanceof Error) return PROVER_FAILURES.some((prefix) => err.message.startsWith(prefix)) ? PROVER_COPY : err.message;
   return String(err);
 }

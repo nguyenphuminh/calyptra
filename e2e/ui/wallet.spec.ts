@@ -209,6 +209,17 @@ test('UI-W6: balances per account and network, a network without Calyptra, relay
   await relays.getByLabel('Add', { exact: true }).fill(relay);
   await relays.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(relays).toContainText(relay);
+  // Addresses the wallet cannot use are refused and never saved, so unlocking below still works.
+  await relayers.getByLabel('Add', { exact: true }).fill('relayer.example.com');
+  await relayers.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(relayers.getByRole('alert')).toHaveText('Enter the privacy relay’s http(s) address');
+  await relays.getByLabel('Add', { exact: true }).fill('relay.example.com');
+  await relays.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(relays.getByRole('alert')).toHaveText('Enter the message relay’s address, like /dns4/relay.example/tcp/443/wss/p2p/12D3…');
+  await relays.getByLabel('Add', { exact: true }).fill('/nonsense/p2p/x');
+  await relays.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(relays.getByRole('alert')).toHaveText('Calyptra could not start with this setting, so it was not saved.');
+  await expect(relays.getByRole('list')).not.toContainText('/nonsense');
 
   await page.getByRole('button', { name: 'Lock' }).click();
   await unlock(page);

@@ -1,10 +1,9 @@
 import { decodeShieldedAddress } from '@calyptra/framework';
 import { useCallback, useState } from 'react';
 import { useApp } from '../../app/context.ts';
-import { DEFAULT_TOKEN, parseAmount, tokenId, type TokenName } from '../../shared/amounts.ts';
+import { DEFAULT_TOKEN, parseAmount, tokenId, typedAmount, type TokenName } from '../../shared/amounts.ts';
 import { AmountField, closeTo, Field, Modal, RelayedSubmit } from '../../shared/ui.tsx';
 import { TokenSelect } from '../public/index.ts';
-import { typedAmount } from './Withdraw.tsx';
 
 /** The Calyptra ID in the user's text: a bare ID or a payment link (…#/send/<id>). */
 export const calyptraIdOf = (text: string): string => text.trim().split('/send/').pop() ?? '';

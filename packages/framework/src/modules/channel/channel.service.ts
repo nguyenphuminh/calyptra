@@ -282,8 +282,12 @@ export class ChannelService {
   /** Agrees a final state (if not already) and submits the cooperative close through `relayer`. */
   async close(id: string, relayer: RelayerPort, accountId?: string): Promise<ChannelRecord> {
     const account = accountId ?? this.deps.wallet.activeAccount().id;
-    const { token, latest } = this.get(id, account);
-    if (!latest.state.final) {
+    const record = this.get(id, account);
+    const { token, latest, pending } = record;
+    if (!latest.state.final && pending?.state.final && pending.prevHash === hashOf(record, latest.state)) {
+      // An earlier Settle the other side did not answer: its final state is sent again as it is.
+      await this.propose(id, null, account);
+    } else if (!latest.state.final) {
       // The relayer's current quote becomes the closing fee; the proposer absorbs any change of the fee.
       const fee = quotedFee(await relayer.info(), token);
       await this.propose(id, (r) => {

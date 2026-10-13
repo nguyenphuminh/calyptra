@@ -53,6 +53,9 @@ export function formatDollarsExact(value: bigint): string {
   return `$${grouped(BigInt(whole))}.${fraction.padEnd(2, '0')}`;
 }
 
+/** The typed amount with its currency, as a confirmation repeats it. */
+export const typedAmount = (name: TokenName, text: string): string => (name === 'stablecoin' ? `$${text.trim()}` : `${text.trim()} MON`);
+
 /**
  * An amount as the main screens show it (§11.6): the stablecoin as dollars, the native coin exactly.
  * The exact amount, as `formatAmount` prints it, belongs in the element's title.

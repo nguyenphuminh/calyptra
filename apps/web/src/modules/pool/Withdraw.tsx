@@ -1,13 +1,10 @@
 import { useCallback, useState } from 'react';
-import { isAddress, type Address } from 'viem';
+import { isAddress, zeroAddress, type Address } from 'viem';
 import { useApp } from '../../app/context.ts';
-import { DEFAULT_TOKEN, parseAmount, tokenId, type TokenName } from '../../shared/amounts.ts';
+import { DEFAULT_TOKEN, parseAmount, tokenId, typedAmount, type TokenName } from '../../shared/amounts.ts';
 import { AmountField, closeTo, Field, Modal, Notice, RelayedSubmit } from '../../shared/ui.tsx';
 import { TokenSelect } from '../public/index.ts';
 import { presetsOf } from './Deposit.tsx';
-
-/** The typed amount with its currency, as a confirmation repeats it. */
-export const typedAmount = (token: TokenName, text: string): string => (token === 'stablecoin' ? `$${text.trim()}` : `${text.trim()} MON`);
 
 /** Cash out: a withdrawal from the private balance to an address the user enters (BRD 2.2.5). */
 export function Withdraw() {
@@ -18,6 +15,7 @@ export function Withdraw() {
   const [address, setAddress] = useState('');
   const [done, setDone] = useState<string | null>(null);
   const parsed = parseAmount(token, amount);
+  const payable = isAddress(address) && address.toLowerCase() !== zeroAddress; // the pool refuses the zero address
   const run = useCallback(async (relayer: Parameters<typeof calyptra.pool.withdraw>[3]) => {
     if (parsed === null) return;
     await calyptra.pool.withdraw(tokenId(token, network), parsed, address as Address, relayer);
@@ -32,7 +30,7 @@ export function Withdraw() {
       </Field>
       <Notice>Tip: waiting longer between adding money and cashing out makes the two harder to link.</Notice>
       <RelayedSubmit label="Cash out" token={token} tokenId={tokenId(token, network)} relayer={() => calyptra.relayer()}
-        disabled={parsed === null || !isAddress(address)}
+        disabled={parsed === null || !payable}
         details={<>Cash out <strong>{typedAmount(token, amount)}</strong> to {address}. The recipient pays no network fee.</>}
         run={run}
         onDone={() => { setAmount(''); refresh(); }} />

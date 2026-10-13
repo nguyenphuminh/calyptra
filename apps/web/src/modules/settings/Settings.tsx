@@ -158,8 +158,10 @@ function RecoveryPhrase({ onReady }: { onReady: () => Promise<void> }) {
             <Button className="secondary wide" busy={show.busy} onClick={() => void show.perform()}>Show recovery phrase</Button>
           </>
         )
-      ) : (
+      ) : calyptra.wallet.hasRecoveryPhrase() ? (
         <p className="muted">This wallet&apos;s recovery phrase was shown once, when it was created.</p>
+      ) : (
+        <p className="muted">This wallet was imported from a private key, so it has no recovery phrase. Keep an export file as its backup.</p>
       )}
       <ErrorNote error={show.error} />
       {importing ? <ResetWallet calyptra={calyptra} onReady={onReady} />
@@ -187,9 +189,11 @@ function Advanced() {
       <RpcEndpoints settings={settings} save={save} />
       <EditableList title={`Privacy relays on ${network.name}`} fixed={network.relayers} own={settings.relayers} placeholder="https://relayer.example"
         note="A privacy relay submits your private payments and pays their network fee, so they never come from an address of yours."
+        check={(url) => (/^https?:\/\/\S+$/.test(url) ? null : 'Enter the privacy relay’s http(s) address')}
         onChange={(relayers) => save({ ...settings, relayers })} />
       <EditableList title={`Message relays on ${network.name}`} fixed={network.libp2pRelays} own={settings.libp2pRelays} placeholder="/dns4/relay.example/tcp/443/wss/p2p/12D3…"
         note="A message relay (libp2p) connects you with the other side of a tab or subscription without revealing your IP address."
+        check={(address) => (address.startsWith('/') && address.includes('/p2p/') ? null : 'Enter the message relay’s address, like /dns4/relay.example/tcp/443/wss/p2p/12D3…')}
         onChange={(libp2pRelays) => save({ ...settings, libp2pRelays })} />
     </>
   );
@@ -250,15 +254,20 @@ function RpcEndpoints({ settings, save }: { settings: WebSettings; save: (next: 
   );
 }
 
-function EditableList({ title, fixed, own, placeholder, note, onChange }: {
-  title: string; fixed: readonly string[]; own: readonly string[]; placeholder: string; note: string; onChange: (next: string[]) => Promise<void>;
+function EditableList({ title, fixed, own, placeholder, note, check, onChange }: {
+  title: string; fixed: readonly string[]; own: readonly string[]; placeholder: string; note: string;
+  /** The problem with an entry's format, or null when it can be added. */
+  check: (entry: string) => string | null;
+  onChange: (next: string[]) => Promise<void>;
 }) {
   const [entry, setEntry] = useState('');
   const save = useAction(onChange);
   const add = useAction(useCallback(async () => {
+    const problem = check(entry);
+    if (problem) throw new Error(problem);
     await onChange([entry, ...own]);
     setEntry('');
-  }, [onChange, entry, own]));
+  }, [check, onChange, entry, own]));
   return (
     <Card title={title}>
       <p className="muted small">{note}</p>
