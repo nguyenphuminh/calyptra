@@ -16,7 +16,7 @@ transaction relayer, a libp2p relay or a merchant.
 |---|---|
 | Live app | [calyptra.space](https://calyptra.space) (Monad testnet, installs on any phone) |
 | Demo video | [youtu.be/3XV2H2RBLuA](https://youtu.be/3XV2H2RBLuA) |
-| Pitch video | [youtu.be/Jwy5DYEuVXM](https://youtu.be/Jwy5DYEuVXM) |
+| Pitch video | [youtu.be/iEmCklt5s6Q](https://youtu.be/iEmCklt5s6Q) |
 | Short ad video | [youtu.be/k0gn4H1vne0](https://youtu.be/k0gn4H1vne0) |
 | Track | Monad Metropolis, Track 02 – Consumer Products & Payments |
 | Bounties | Mera: One Passkey, Many Keys; Mera: Best Mera-Powered UX; Envio: Best Use of Envio; Agora: Best Cross-Border Payments App |
